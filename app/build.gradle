@@ -100,5 +100,4 @@ dependencies {
     implementation 'com.google.dagger:dagger:2.43.2'
     kapt 'com.google.dagger:dagger-compiler:2.43.2'
 
-    implementation 'androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha05'
 }

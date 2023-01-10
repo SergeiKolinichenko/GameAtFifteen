@@ -26,18 +26,312 @@ fun GameBoard() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        repeat(4) {
-            RowButtons()
+        // ------------------------------------
+        Row(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
         }
+        // --------------------------------------
+        // ------------------------------------
+        Row(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+        }
+        // --------------------------------------
+        // ------------------------------------
+        Row(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+        }
+        // --------------------------------------
+        // ------------------------------------
+        Row(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp, top = 2.dp)
+                    .fillMaxSize()
+                    .clickable { /*TODO*/ },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Text(
+                    text = "10",
+                    modifier = Modifier.wrapContentSize(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+        }
+        // --------------------------------------
     }
 }
 
 @Composable
 private fun RowButtons() {
-    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-    ) {
+    Row {
         repeat(4) {
             GameButton()
         }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import info.sergeikolinichenko.gameatfifteen.screens.game.GameBoard
 import info.sergeikolinichenko.gameatfifteen.screens.game.GameControl
+import info.sergeikolinichenko.gameatfifteen.screens.game.HorizontalOrientation
 import info.sergeikolinichenko.gameatfifteen.screens.game.VerticalOrientation
 import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
 
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    VerticalOrientation()
+                    HorizontalOrientation()
                 }
             }
         }
