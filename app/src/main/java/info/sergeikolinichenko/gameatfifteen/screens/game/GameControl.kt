@@ -1,23 +1,25 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.HorizontalAlignmentLine
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
@@ -26,9 +28,17 @@ import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 @Composable
 fun GameControl() {
 
+    val viewModel: GameViewModel = viewModel()
+    val buttonState = viewModel.gameControlStates.observeAsState(
+        initial = GameControlState.Initial
+    )
+
     Column(
-        modifier = Modifier.padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
 
         Row(
@@ -37,128 +47,108 @@ fun GameControl() {
             horizontalArrangement = Arrangement.SpaceAround
         ) {
 
-            Card(
-                modifier = Modifier
-                    .padding(end = 4.dp)
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
-                ) {
-
-                    ResponsiveExampleText(text = "Time: 15:15")
-
-//                    Text(
-//                        text = "Time:",
-//                        fontSize = FONT_SIZE_TEXT.sp,
-//                        fontWeight = FontWeight.ExtraBold
-//                    )
-//                    Spacer(modifier = Modifier.size(8.dp))
-//                    Text(
-//                        text = "15:15",
-//                        fontSize = FONT_SIZE_TEXT.sp,
-//                        fontWeight = FontWeight.Bold
-//                    )
-
+            Box(modifier = Modifier.weight(1f)) {
+                var text = "Time: 15:15"
+                text = when(buttonState.value) {
+                    GameControlState.ButtonStatistics -> "Statistic"
+                    GameControlState.ButtonStartGame -> "Start"
+                    GameControlState.ButtonGameOver -> "Over"
+                    else -> "Time: 15:15"
                 }
+
+                GameTextInfo(text = text)
             }
 
-            Card(
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
-                ) {
-
-                    ResponsiveExampleText(text = "Movies: 215")
-
-//                    Text(
-//                        text = "Movies:",
-//                        fontSize = FONT_SIZE_TEXT.sp,
-//                        fontWeight = FontWeight.ExtraBold
-//                    )
-//                    Spacer(modifier = Modifier.size(8.dp))
-//                    Text(
-//                        text = "215",
-//                        fontSize = FONT_SIZE_TEXT.sp,
-//                        fontWeight = FontWeight.Bold
-//                    )
-                }
+            Box(modifier = Modifier.weight(1f)) {
+                GameTextInfo(text = "Movies: 215")
             }
         }
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        Button(
-            onClick = { /*TODO*/ },
-            border = BorderStroke(
-                width = 2.dp,
-                color = MaterialTheme.colors.primaryVariant
-            ),
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "Statistics",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        GameButtons(
+            titleButton = R.string.button_statistics,
+            onClickListener = {
+                viewModel.changeGameControlState(
+                    GameControlState.ButtonStatistics
+                )
+            }
+        )
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        Row(
-//            modifier = Modifier.weight(1f)
-        ) {
-            Button(
-                onClick = { /*TODO*/ },
-                border = BorderStroke(
-                    width = 2.dp,
-                    color = MaterialTheme.colors.primaryVariant
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "Game\nOver",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+        Row {
+
+            Box(modifier = Modifier.weight(1f)) {
+                GameButtons(
+                    titleButton = R.string.button_game_over,
+                    onClickListener = {
+                        viewModel.changeGameControlState(
+                            GameControlState.ButtonGameOver
+                        )
+                    }
                 )
             }
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            Button(
-                onClick = { /*TODO*/ },
-                border = BorderStroke(
-                    width = 2.dp,
-                    color = MaterialTheme.colors.primaryVariant
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "Start\nGame",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+            Box(modifier = Modifier.weight(1f)) {
+                GameButtons(
+                    titleButton = R.string.button_start_game,
+                    onClickListener = {
+                        viewModel.changeGameControlState(
+                            GameControlState.ButtonStartGame
+                        )
+                    }
                 )
             }
         }
 
         Spacer(modifier = Modifier.size(8.dp))
+    }
+}
+
+@Composable
+private fun GameTextInfo(
+    text: String
+) {
+    Card(
+        modifier = Modifier
+            .padding(start = 4.dp)
+            .fillMaxWidth()
+    ) {
+
+        Row(
+            modifier = Modifier
+                .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
+        ) {
+
+            ResponsiveTitleText(text = text)
+
+        }
+    }
+}
+
+@Composable
+private fun GameButtons(
+    titleButton: Int,
+    onClickListener: () -> Unit
+) {
+    Button(
+        onClick = { onClickListener() },
+        border = BorderStroke(
+            width = 2.dp,
+            color = MaterialTheme.colors.primaryVariant
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = stringResource(id = titleButton),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -183,7 +173,7 @@ fun PreviewThemeDarkGameControl() {
 }
 
 @Composable
-private fun ResponsiveExampleText(
+private fun ResponsiveTitleText(
     modifier: Modifier = Modifier,
     text: String,
 ) {

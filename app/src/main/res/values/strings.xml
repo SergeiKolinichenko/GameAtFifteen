@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">GameAtFifteen</string>
+
+    <!--  Title for the buttons in the GameControl  -->
+    <string name="button_statistics">Statistics</string>
+    <string name="button_game_over">Game\nOver</string>
+    <string name="button_start_game">Start\nGame</string>
+
+    <!-- Text for the Texts in the GameControl  -->
+    <string name="text_time_elapsed">Elapsed: %1$s</string>
+    <string name="text_move_number">Move: %1$s</string>
+
 </resources>
