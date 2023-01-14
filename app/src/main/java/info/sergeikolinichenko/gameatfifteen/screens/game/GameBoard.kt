@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,16 +8,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import info.sergeikolinichenko.gameatfifteen.screens.game.GameBoardState.Companion.PLATE_LIST
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.PLATE_LIST
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
@@ -24,7 +24,13 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.GameBoardState.Compani
 fun GameBoard() {
 
     val viewModel: GameViewModel = viewModel()
-    val plateState by viewModel.gameBoard.observeAsState(initial = PLATE_LIST)
+//    val plateState by viewModel.gameBoard.observeAsState(
+//        initial = PLATE_LIST
+//    )
+
+    var plateState by remember {
+        mutableStateOf(PLATE_LIST)
+    }
 
     Column(
         modifier = Modifier
@@ -34,17 +40,17 @@ fun GameBoard() {
         verticalArrangement = Arrangement.Top
     ) {
 
-        for (line in plateState.indices) {
+        plateState.forEach { arrayOfGameBoardStates ->
 
             Row(modifier = Modifier.weight(1f)) {
 
-                for (item in plateState[line].indices) {
-
-                    val title = plateState[line][item].number
+                arrayOfGameBoardStates.forEach {  GameBoardState ->
 
                     Box(modifier = Modifier.weight(1f)) {
-                        GameButton(title = title) {
 
+                        GameButton(state =  GameBoardState) {
+                            plateState = onClickGameButton(it, plateState)
+                            testArray(plateState)
                         }
                     }
 
@@ -89,14 +95,15 @@ fun GameBoard() {
 
 @Composable
 private fun GameButton(
-    title: String,
-    onClickListener: () -> Unit
+    state: GameBoardState,
+    onClickListener: (number: String) -> Unit
 ) {
+
     Card(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 2.dp, top = 2.dp)
-            .clickable { onClickListener() },
+            .clickable { onClickListener(state.number) },
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(
             1.dp,
@@ -104,7 +111,7 @@ private fun GameButton(
         )
     ) {
         Text(
-            text = title,
+            text = state.number,
             modifier = Modifier.wrapContentSize(),
             fontSize = 30.sp,
             fontWeight = FontWeight.Black
@@ -131,3 +138,65 @@ private fun GameButton(
 //        GameBoard()
 //    }
 //}
+
+fun onClickGameButton(number: String, plateState: Array<Array<GameBoardState>>): Array<Array<GameBoardState>> {
+
+    var indexX: Int = 0
+    var indexY: Int = 0
+
+    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
+        arrayOfGameBoardStates.forEachIndexed { y, gameBoardState ->
+            if (gameBoardState.number == number) {
+                indexX = x
+                indexY = y
+            }
+        }
+    }
+
+    return makeMove(indexX, indexY, plateState)
+}
+
+private fun makeMove(x: Int, y: Int, plateState: Array<Array<GameBoardState>>): Array<Array<GameBoardState>> {
+
+    val array = plateState
+
+    testArray(array)
+
+    val emptyX = getEmptyX(plateState)
+    val emptyY = getEmptyY(plateState)
+
+    array[emptyX][emptyY] = array[x][y]
+    array[x][y] = GameBoardState.NoPlate
+
+    testArray(array)
+
+    return array
+}
+
+private fun getEmptyX(plateState: Array<Array<GameBoardState>>): Int {
+    var indexX = 0
+    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
+        arrayOfGameBoardStates.forEachIndexed { y, _ ->
+            if (plateState[x][y] == GameBoardState.NoPlate) indexX = x
+        }
+    }
+    return indexX
+}
+
+private fun getEmptyY(plateState: Array<Array<GameBoardState>>): Int {
+    var indexY = 0
+    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
+        arrayOfGameBoardStates.forEachIndexed { y, _ ->
+            if (plateState[x][y] == GameBoardState.NoPlate) indexY = y
+        }
+    }
+    return indexY
+}
+
+private fun testArray(array: Array<Array<GameBoardState>>) {
+    array.forEach {
+        it.forEach {
+            Log.d("MyLog", "${it.number}, ")
+        }
+    }
+}

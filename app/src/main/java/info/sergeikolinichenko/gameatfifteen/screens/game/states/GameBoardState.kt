@@ -1,4 +1,4 @@
-package info.sergeikolinichenko.gameatfifteen.screens.game
+package info.sergeikolinichenko.gameatfifteen.screens.game.states
 
 /** Created by Sergei Kolinichenko on 12.01.2023 at 17:09 (GMT+3) **/
 
