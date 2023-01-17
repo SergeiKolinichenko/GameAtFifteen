@@ -1,6 +1,5 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,16 +7,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.PLATE_ARRAY
+import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
@@ -35,44 +37,23 @@ fun GameBoard() {
         verticalArrangement = Arrangement.Top
     ) {
 
-//        plateState.forEach { arrayOfGameBoardStates ->
-//
-//            Row(modifier = Modifier.weight(1f)) {
-//
-//                arrayOfGameBoardStates.forEach { GameBoardState ->
-//
-//                    Box(modifier = Modifier.weight(1f)) {
-//
-//                        GameButton(state = GameBoardState) {
-//                            plateState = onClickGameButton(it, plateState)
-//                            testArray(plateState)
-//                        }
-//                    }
-//
-//                }
-//
-//            }
-//
-//        }
-        var counter = 0
-        for (line in 1..4) {
+        plateState?.forEach { arrayOfGameBoardStates ->
 
             Row(modifier = Modifier.weight(1f)) {
 
-                for (item in 1..4) {
+                arrayOfGameBoardStates.forEach { GameBoardState ->
 
                     Box(modifier = Modifier.weight(1f)) {
 
-                        if (plateState != null) {
-                            GameButton(state = plateState!![counter]) {
-                                viewModel.onClickGameButton(it)
-                            }
+                        GameButton(state = GameBoardState) {
+                            viewModel.onClickGameButton(it)
                         }
-                        counter++
-
                     }
+
                 }
+
             }
+
         }
     }
 }
@@ -94,13 +75,22 @@ private fun GameButton(
             color = MaterialTheme.colors.onPrimary
         )
     ) {
-        Text(
-            text = state.number,
-            modifier = Modifier.wrapContentSize(),
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Black
-        )
+
+        ResponsiveTitleText(modifier = Modifier.wrapContentSize(), text = state.number)
     }
+}
+
+@Composable
+private fun ResponsiveTitleText(
+    modifier: Modifier = Modifier,
+    text: String,
+) {
+    ResponsiveText(
+        modifier = modifier,
+        text = text,
+        textStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Black),
+        textAlign = TextAlign.End
+    )
 }
 
 //@Preview

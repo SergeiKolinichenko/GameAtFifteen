@@ -3,51 +3,59 @@ package info.sergeikolinichenko.gameatfifteen.screens.game
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.PLATE_ARRAY
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameBoard
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** Created by Sergei Kolinichenko on 11.01.2023 at 21:37 (GMT+3) **/
 
-class GameViewModel: ViewModel() {
+class GameViewModel : ViewModel() {
 
-    private var _gameControlButtonState = MutableLiveData<GameControlButtonState>(GameControlButtonState.Initial)
+    private var _gameControlButtonState =
+        MutableLiveData<GameControlButtonState>(GameControlButtonState.Initial)
     val gameControlButtonState: LiveData<GameControlButtonState> = _gameControlButtonState
 
-    private var _gameControlTextState = MutableLiveData<GameControlTextState>(GameControlTextState.Initial)
+    private var _gameControlTextState =
+        MutableLiveData<GameControlTextState>(GameControlTextState.Initial)
     val gameControlTextState: LiveData<GameControlTextState> = _gameControlTextState
 
-    var inGameBoard = MutableLiveData(PLATE_ARRAY)
-    private var _gameBoard = MutableLiveData(convertArrayToList(PLATE_ARRAY))
-    val gameBoard: LiveData<List<GameBoardState>> = _gameBoard
+    private var _gameBoard = MutableLiveData<Array<Array<GameBoardState>>>()
+    val gameBoard: LiveData<Array<Array<GameBoardState>>> = _gameBoard
 
     private var _movesNumber = MutableLiveData(0)
-    val movesNumber: LiveData<Int> = _movesNumber
 
     init {
         initGameScreen()
     }
 
-
     private fun initGameScreen() {
+        _gameBoard.value = getGameBoard()
         _gameControlTextState.value =
             GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_TIME_ELAPSED)
         _gameControlTextState.value =
             GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_MOVES_NUMBER)
     }
 
-    fun changeGameControlButtonState(state: GameControlButtonState) {
+    fun getPressedGameControlButton(state: GameControlButtonState) {
         if (state == GameControlButtonState.ButtonStartGame) {
-
-
+            startGame()
         }
         if (state == GameControlButtonState.ButtonGameOver) {
-
+            gameOver()
         }
         if (state == GameControlButtonState.ButtonStatistics) {
 
         }
+    }
+
+    private fun gameOver() {
+        resetMovesNumber()
+        _gameBoard.value = getGameBoard()
+
     }
 
     fun onClickGameButton(number: String) {
@@ -55,7 +63,7 @@ class GameViewModel: ViewModel() {
         var indexX = 0
         var indexY = 0
 
-        inGameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
+        gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, gameBoardState ->
                 if (gameBoardState.number == number) {
                     indexX = x
@@ -68,23 +76,65 @@ class GameViewModel: ViewModel() {
 
     }
 
+    private fun startGame() {
+
+        viewModelScope.launch {
+
+            var step = 0
+            var stepTime = System.currentTimeMillis()
+            val noRepeat = mutableListOf<String>()
+
+            do {
+
+                val x = getEmptyX() + (-1..1).random()
+                val y = getEmptyY() + (-1..1).random()
+
+                val xy = "$x$y"
+
+                if (!noRepeat.contains(xy)) {
+
+                    if (x != 3 || y != 3) {
+
+                        if (isMoveValid(x, y)) {
+
+                            step++
+                            noRepeat.add(xy)
+                            if ((step % 5) == 0) noRepeat.clear()
+
+                            stepTime = System.currentTimeMillis()
+
+                            makeMove(x, y)
+                            delay(150)
+
+                        }
+
+                    }
+                }
+
+                val timeGape = (System.currentTimeMillis()) - stepTime
+                if (timeGape > 300) noRepeat.clear()
+
+            } while (step < 10)
+            resetMovesNumber()
+        }
+    }
+
     private fun makeMove(x: Int, y: Int) {
 
         if (isMoveValid(x, y)) {
 
+            setMovesNumber()
+
             val emptyX = getEmptyX()
             val emptyY = getEmptyY()
 
-            val board = inGameBoard.value ?: PLATE_ARRAY
+            val board = gameBoard.value ?: getGameBoard()
 
             board[emptyX][emptyY] = board[x][y]
             board[x][y] = GameBoardState.NoPlate
 
-            inGameBoard.value = board
-            _gameBoard.value = convertArrayToList(board)
+            _gameBoard.value = board.copyOf()
 
-            _movesNumber.value = movesNumber.value?.plus(1)
-            _gameControlTextState.value = GameControlTextState.TextMovesNumber(movesNumber = movesNumber.value.toString())
         }
     }
 
@@ -98,7 +148,8 @@ class GameViewModel: ViewModel() {
         }
 
         if ((((blankX == x - 1) or (blankX == x + 1)) and (blankY == y))
-            or (((blankY == y - 1) or (blankY == y + 1)) and (blankX == x))) {
+            or (((blankY == y - 1) or (blankY == y + 1)) and (blankX == x))
+        ) {
             return true
         }
         return false
@@ -106,8 +157,8 @@ class GameViewModel: ViewModel() {
 
     private fun getEmptyX(): Int {
         var indexX = 0
-        val board = inGameBoard.value ?: PLATE_ARRAY
-        inGameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
+        val board = gameBoard.value ?: getGameBoard()
+        gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexX = x
             }
@@ -117,8 +168,8 @@ class GameViewModel: ViewModel() {
 
     private fun getEmptyY(): Int {
         var indexY = 0
-        val board = inGameBoard.value ?: PLATE_ARRAY
-        inGameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
+        val board = gameBoard.value ?: getGameBoard()
+        gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexY = y
             }
@@ -126,18 +177,21 @@ class GameViewModel: ViewModel() {
         return indexY
     }
 
-    private fun convertArrayToList(array: Array<Array<GameBoardState>>?): List<GameBoardState> {
-        val list = mutableListOf<GameBoardState>()
-        array?.forEach { arr ->
-            arr.forEach {
-                list.add(it)
-            }
-        }
-        return list
+    private fun setMovesNumber() {
+        _movesNumber.value = _movesNumber.value?.plus(1)
+        _gameControlTextState.value =
+            GameControlTextState.TextMovesNumber(movesNumber = _movesNumber.value.toString())
     }
 
-    companion object{
+    private fun resetMovesNumber() {
+        _movesNumber.value = RESET_MOVES_NUMBER
+        _gameControlTextState.value =
+            GameControlTextState.TextMovesNumber(movesNumber = _movesNumber.value.toString())
+    }
+
+    companion object {
         private const val INIT_TEXT_TIME_ELAPSED = "00:00"
-        private const val INIT_TEXT_MOVES_NUMBER = "0000"
+        private const val INIT_TEXT_MOVES_NUMBER = "0"
+        private const val RESET_MOVES_NUMBER = 0
     }
 }

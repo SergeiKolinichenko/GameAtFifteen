@@ -89,7 +89,7 @@ fun GameControl() {
                     .fillMaxWidth(),
                 titleButton = R.string.button_statistics,
                 onClickListener = {
-                    viewModel.changeGameControlButtonState(
+                    viewModel.getPressedGameControlButton(
                         GameControlButtonState.ButtonStatistics
                     )
                 }
@@ -105,7 +105,7 @@ fun GameControl() {
                     modifier = Modifier.weight(1f),
                     titleButton = R.string.button_game_over,
                     onClickListener = {
-                        viewModel.changeGameControlButtonState(
+                        viewModel.getPressedGameControlButton(
                             GameControlButtonState.ButtonGameOver
                         )
                     }
@@ -117,7 +117,7 @@ fun GameControl() {
                     modifier = Modifier.weight(1f),
                     titleButton = R.string.button_start_game,
                     onClickListener = {
-                        viewModel.changeGameControlButtonState(
+                        viewModel.getPressedGameControlButton(
                             GameControlButtonState.ButtonStartGame
                         )
                     }

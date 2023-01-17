@@ -24,12 +24,14 @@ sealed class GameBoardState(
 
     companion object{
 
-        val PLATE_ARRAY = arrayOf(
-            arrayOf(PlateOne, PlateTwo, PlateThree, PlateFour),
-            arrayOf(PlateFive, PlateSix, PlateSeven, PlateEight),
-            arrayOf(PlateNine, PlateTen, PlateEleven, PlateTwelve),
-            arrayOf(PlateThirteen, PlateFourteen, PlateFifteen, NoPlate)
-        )
+        fun getGameBoard(): Array<Array<GameBoardState>> {
+            return arrayOf(
+                arrayOf(PlateOne, PlateTwo, PlateThree, PlateFour),
+                arrayOf(PlateFive, PlateSix, PlateSeven, PlateEight),
+                arrayOf(PlateNine, PlateTen, PlateEleven, PlateTwelve),
+                arrayOf(PlateThirteen, PlateFourteen, PlateFifteen, NoPlate)
+            )
+        }
 
         const val PLATE_ONE = "1"
         const val PLATE_TWO = "2"
