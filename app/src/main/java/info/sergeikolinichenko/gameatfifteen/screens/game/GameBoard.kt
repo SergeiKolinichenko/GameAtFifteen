@@ -9,6 +9,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -16,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.PLATE_LIST
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.PLATE_ARRAY
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
@@ -24,13 +25,7 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.
 fun GameBoard() {
 
     val viewModel: GameViewModel = viewModel()
-//    val plateState by viewModel.gameBoard.observeAsState(
-//        initial = PLATE_LIST
-//    )
-
-    var plateState by remember {
-        mutableStateOf(PLATE_LIST)
-    }
+    val plateState by viewModel.gameBoard.observeAsState()
 
     Column(
         modifier = Modifier
@@ -40,58 +35,47 @@ fun GameBoard() {
         verticalArrangement = Arrangement.Top
     ) {
 
-        plateState.forEach { arrayOfGameBoardStates ->
+//        plateState.forEach { arrayOfGameBoardStates ->
+//
+//            Row(modifier = Modifier.weight(1f)) {
+//
+//                arrayOfGameBoardStates.forEach { GameBoardState ->
+//
+//                    Box(modifier = Modifier.weight(1f)) {
+//
+//                        GameButton(state = GameBoardState) {
+//                            plateState = onClickGameButton(it, plateState)
+//                            testArray(plateState)
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+//
+//        }
+        var counter = 0
+        for (line in 1..4) {
 
             Row(modifier = Modifier.weight(1f)) {
 
-                arrayOfGameBoardStates.forEach {  GameBoardState ->
+                for (item in 1..4) {
 
                     Box(modifier = Modifier.weight(1f)) {
 
-                        GameButton(state =  GameBoardState) {
-                            plateState = onClickGameButton(it, plateState)
-                            testArray(plateState)
+                        if (plateState != null) {
+                            GameButton(state = plateState!![counter]) {
+                                viewModel.onClickGameButton(it)
+                            }
                         }
+                        counter++
+
                     }
-
                 }
-
             }
-
         }
-
-//        Box(modifier = Modifier.weight(1f)) {
-//            RowButtons()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            RowButtons()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            RowButtons()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            RowButtons()
-//        }
     }
 }
-
-//@Composable
-//private fun RowButtons() {
-//    Row {
-//        Box(modifier = Modifier.weight(1f)) {
-//            GameButton()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            GameButton()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            GameButton()
-//        }
-//        Box(modifier = Modifier.weight(1f)) {
-//            GameButton()
-//        }
-//    }
-//}
 
 @Composable
 private fun GameButton(
@@ -138,65 +122,3 @@ private fun GameButton(
 //        GameBoard()
 //    }
 //}
-
-fun onClickGameButton(number: String, plateState: Array<Array<GameBoardState>>): Array<Array<GameBoardState>> {
-
-    var indexX: Int = 0
-    var indexY: Int = 0
-
-    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
-        arrayOfGameBoardStates.forEachIndexed { y, gameBoardState ->
-            if (gameBoardState.number == number) {
-                indexX = x
-                indexY = y
-            }
-        }
-    }
-
-    return makeMove(indexX, indexY, plateState)
-}
-
-private fun makeMove(x: Int, y: Int, plateState: Array<Array<GameBoardState>>): Array<Array<GameBoardState>> {
-
-    val array = plateState
-
-    testArray(array)
-
-    val emptyX = getEmptyX(plateState)
-    val emptyY = getEmptyY(plateState)
-
-    array[emptyX][emptyY] = array[x][y]
-    array[x][y] = GameBoardState.NoPlate
-
-    testArray(array)
-
-    return array
-}
-
-private fun getEmptyX(plateState: Array<Array<GameBoardState>>): Int {
-    var indexX = 0
-    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
-        arrayOfGameBoardStates.forEachIndexed { y, _ ->
-            if (plateState[x][y] == GameBoardState.NoPlate) indexX = x
-        }
-    }
-    return indexX
-}
-
-private fun getEmptyY(plateState: Array<Array<GameBoardState>>): Int {
-    var indexY = 0
-    plateState.forEachIndexed { x, arrayOfGameBoardStates ->
-        arrayOfGameBoardStates.forEachIndexed { y, _ ->
-            if (plateState[x][y] == GameBoardState.NoPlate) indexY = y
-        }
-    }
-    return indexY
-}
-
-private fun testArray(array: Array<Array<GameBoardState>>) {
-    array.forEach {
-        it.forEach {
-            Log.d("MyLog", "${it.number}, ")
-        }
-    }
-}

@@ -1,6 +1,5 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -10,19 +9,20 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
-import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 08.01.2023 at 19:51 (GMT+3) **/
@@ -31,8 +31,6 @@ import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 fun GameControl() {
 
     val viewModel: GameViewModel = viewModel()
-
-    Log.d("MyLog", "GameControl")
 
     Column(
         modifier = Modifier
@@ -47,74 +45,34 @@ fun GameControl() {
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
 
-                    val textTimeElapsed by viewModel.textTimeElapsed.observeAsState(initial = "00:00")
+            val textGame by viewModel.gameControlTextState.observeAsState(initial = GameControlTextState.Initial)
+            val textTimeElapsed = remember { mutableStateOf("00:00") }
+            val textMovesNumber = remember { mutableStateOf("0000") }
 
-                    ResponsiveTitleText(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically),
-                        text = stringResource(id = R.string.text_time_elapsed)
-                    )
+            when(textGame) {
+                is GameControlTextState.TextTimeElapsed -> textTimeElapsed.value = (textGame as GameControlTextState.TextTimeElapsed).timeElapsed
+                is GameControlTextState.TextMovesNumber -> textMovesNumber.value = (textGame as GameControlTextState.TextMovesNumber).movesNumber
+                else -> {}
+            }
 
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colors.primaryVariant
-                        )
-                    ) {
-
-                        ResponsiveTitleText(
-                            modifier = Modifier
-                                .width(130.dp)
-                                .padding(start = 20.dp, end = 20.dp)
-                                .align(Alignment.CenterVertically),
-                            text = textTimeElapsed,
-                        )
-                    }
-                }
+            GameTexts(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                title = stringResource(id = R.string.text_time_elapsed),
+                info = textTimeElapsed.value
+            )
 
             Spacer(modifier = Modifier.size(4.dp))
 
-                val textMoveNumber by viewModel.textMoveNumber.observeAsState(initial = "0000")
-
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    ResponsiveTitleText(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        text = stringResource(id = R.string.text_move_number)
-                    )
-
-                    Card(
-                        modifier = Modifier
-                            .width(130.dp)
-                            .align(Alignment.CenterVertically),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colors.primaryVariant
-                        )
-                    ) {
-
-                        ResponsiveTitleText(
-                            modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .align(Alignment.CenterVertically),
-                            text = textMoveNumber
-                        )
-                    }
-                }
+            GameTexts(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                title = stringResource(id = R.string.text_move_number),
+                info = textMovesNumber.value
+            )
         }
 
         Spacer(modifier = Modifier.size(16.dp))
@@ -137,7 +95,6 @@ fun GameControl() {
                 }
             )
 
-
             Spacer(modifier = Modifier.size(10.dp))
 
             Row(
@@ -154,7 +111,6 @@ fun GameControl() {
                     }
                 )
 
-
                 Spacer(modifier = Modifier.size(8.dp))
 
                 GameButtons(
@@ -167,6 +123,42 @@ fun GameControl() {
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun GameTexts(
+    modifier: Modifier = Modifier,
+    title: String,
+    info: String
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        ResponsiveTitleText(
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
+            text = title
+        )
+
+        Card(
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colors.primaryVariant
+            )
+        ) {
+
+            ResponsiveTitleText(
+                modifier = Modifier
+                    .width(130.dp)
+                    .padding(start = 20.dp, end = 20.dp)
+                    .align(Alignment.CenterVertically),
+                text = info,
+            )
         }
     }
 }
@@ -194,26 +186,6 @@ private fun GameButtons(
     }
 }
 
-@Preview
-@Composable
-fun PreviewThemeLightGameControl() {
-    GameAtFifteenTheme(
-        darkTheme = false
-    ) {
-        GameControl()
-    }
-}
-
-@Preview
-@Composable
-fun PreviewThemeDarkGameControl() {
-    GameAtFifteenTheme(
-        darkTheme = true
-    ) {
-        GameControl()
-    }
-}
-
 @Composable
 private fun ResponsiveTitleText(
     modifier: Modifier = Modifier,
@@ -226,3 +198,23 @@ private fun ResponsiveTitleText(
         textAlign = TextAlign.End
     )
 }
+
+//@Preview
+//@Composable
+//fun PreviewThemeLightGameControl() {
+//    GameAtFifteenTheme(
+//        darkTheme = false
+//    ) {
+//        GameControl()
+//    }
+//}
+//
+//@Preview
+//@Composable
+//fun PreviewThemeDarkGameControl() {
+//    GameAtFifteenTheme(
+//        darkTheme = true
+//    ) {
+//        GameControl()
+//    }
+//}

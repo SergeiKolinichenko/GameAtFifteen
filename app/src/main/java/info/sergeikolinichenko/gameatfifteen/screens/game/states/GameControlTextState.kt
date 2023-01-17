@@ -2,25 +2,16 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.states
 
 /** Created by Sergei Kolinichenko on 14.01.2023 at 14:46 (GMT+3) **/
 
-sealed class GameControlTextState(
-    val info: String
-) {
+sealed class GameControlTextState {
 
-    object Initial: GameControlTextState(
-        info = TEXT_INITIAL
-    )
+    object Initial: GameControlTextState()
 
-    object TextTimeElapsed: GameControlTextState(
-        info = TEXT_TIME_ELAPSED
-    )
+    class TextTimeElapsed(
+        val timeElapsed: String
+    ): GameControlTextState()
 
-    object TextMoveNumber: GameControlTextState(
-        info = TEXT_MOVE_NUMBER
-    )
+    class TextMovesNumber(
+        val movesNumber: String
+    ): GameControlTextState()
 
-    private companion object{
-        private const val TEXT_INITIAL = "-----"
-        private const val TEXT_TIME_ELAPSED = "00:00"
-        private const val TEXT_MOVE_NUMBER = "0000"
-    }
 }

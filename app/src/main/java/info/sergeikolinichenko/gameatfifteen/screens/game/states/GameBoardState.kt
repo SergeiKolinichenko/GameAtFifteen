@@ -24,7 +24,7 @@ sealed class GameBoardState(
 
     companion object{
 
-        val PLATE_LIST = arrayOf(
+        val PLATE_ARRAY = arrayOf(
             arrayOf(PlateOne, PlateTwo, PlateThree, PlateFour),
             arrayOf(PlateFive, PlateSix, PlateSeven, PlateEight),
             arrayOf(PlateNine, PlateTen, PlateEleven, PlateTwelve),
