@@ -1,6 +1,5 @@
 package info.sergeikolinichenko.gameatfifteen.screens.score
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Card

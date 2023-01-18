@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -22,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.ButtonGameOver
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.ButtonStartGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
@@ -47,8 +50,8 @@ fun GameControl() {
         ) {
 
             val textGame by viewModel.gameControlTextState.observeAsState(initial = GameControlTextState.Initial)
-            val textTimeElapsed = remember { mutableStateOf("00:00") }
-            val textMovesNumber = remember { mutableStateOf("0000") }
+            val textTimeElapsed = remember { mutableStateOf("") }
+            val textMovesNumber = remember { mutableStateOf("") }
 
             when(textGame) {
                 is GameControlTextState.TextTimeElapsed -> textTimeElapsed.value = (textGame as GameControlTextState.TextTimeElapsed).timeElapsed
@@ -83,6 +86,10 @@ fun GameControl() {
                 .fillMaxWidth()
         ) {
 
+            val buttonGame by viewModel.gameControlButtonState.observeAsState(
+                initial = GameControlButtonState.Initial
+            )
+
             GameButtons(
                 modifier = Modifier
                     .weight(1f)
@@ -106,19 +113,24 @@ fun GameControl() {
                     titleButton = R.string.button_game_over,
                     onClickListener = {
                         viewModel.getPressedGameControlButton(
-                            GameControlButtonState.ButtonGameOver
+                            ButtonGameOver
                         )
                     }
                 )
 
                 Spacer(modifier = Modifier.size(8.dp))
 
+                val enableButtonStartGame =
+                    if (buttonGame is ButtonStartGame)(buttonGame as ButtonStartGame).enable
+                else true
+
                 GameButtons(
                     modifier = Modifier.weight(1f),
                     titleButton = R.string.button_start_game,
+                    enableButton = enableButtonStartGame,
                     onClickListener = {
                         viewModel.getPressedGameControlButton(
-                            GameControlButtonState.ButtonStartGame
+                            ButtonStartGame()
                         )
                     }
                 )
@@ -167,6 +179,7 @@ private fun GameTexts(
 private fun GameButtons(
     modifier: Modifier = Modifier,
     titleButton: Int,
+    enableButton: Boolean = true,
     onClickListener: () -> Unit
 ) {
     Button(
@@ -176,7 +189,7 @@ private fun GameButtons(
             color = MaterialTheme.colors.primaryVariant
         ),
         modifier = modifier,
-
+        enabled = enableButton
     ) {
         Text(
             text = stringResource(id = titleButton),

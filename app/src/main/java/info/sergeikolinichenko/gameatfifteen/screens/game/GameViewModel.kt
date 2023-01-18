@@ -27,7 +27,7 @@ class GameViewModel : ViewModel() {
     val gameBoard: LiveData<Array<Array<GameBoardState>>> = _gameBoard
 
     private var _movesNumber = MutableLiveData(0)
-    private var _stateTime = false
+    private var _stateTimer = false
 
     init {
         initGameScreen()
@@ -36,13 +36,14 @@ class GameViewModel : ViewModel() {
     private fun initGameScreen() {
         _gameBoard.value = getGameBoard()
         _gameControlTextState.value =
-            GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_TIME_ELAPSED)
+            GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_FIELDS)
         _gameControlTextState.value =
-            GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_MOVES_NUMBER)
+            GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_FIELDS)
     }
 
     fun getPressedGameControlButton(state: GameControlButtonState) {
-        if (state == GameControlButtonState.ButtonStartGame) {
+
+        if (state is GameControlButtonState.ButtonStartGame) {
             startGame()
         }
         if (state == GameControlButtonState.ButtonGameOver) {
@@ -56,7 +57,8 @@ class GameViewModel : ViewModel() {
     private fun gameOver() {
         _gameBoard.value = getGameBoard()
         resetMovesNumber()
-
+        setButtonStartGameEnabled()
+        stopTimer()
     }
 
     fun onClickGameButton(number: String) {
@@ -113,12 +115,13 @@ class GameViewModel : ViewModel() {
                 }
 
                 val timeGape = (System.currentTimeMillis()) - stepTime
-                if (timeGape > 300) noRepeat.clear()
+                if (timeGape > NUMBER_MOVES_TIME_GAPE) noRepeat.clear()
 
-            } while (step < 50)
+            } while (step < SET_NUMBER_MOVES)
 
+            setButtonStartGameNotEnabled()
             resetMovesNumber()
-            startGameTimer()
+            startTimer()
         }
     }
 
@@ -182,14 +185,20 @@ class GameViewModel : ViewModel() {
 
     private fun setMovesNumber() {
         _movesNumber.value = _movesNumber.value?.plus(1)
-        _gameControlTextState.value =
-            GameControlTextState.TextMovesNumber(movesNumber = _movesNumber.value.toString())
+        setTextMovesNumber(_movesNumber.value.toString())
     }
 
     private fun resetMovesNumber() {
         _movesNumber.value = RESET_MOVES_NUMBER
-        _gameControlTextState.value =
-            GameControlTextState.TextMovesNumber(movesNumber = _movesNumber.value.toString())
+        setTextMovesNumber(INIT_TEXT_FIELDS)
+    }
+
+    private fun setButtonStartGameNotEnabled() {
+        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame(enable = false)
+    }
+
+    private fun setButtonStartGameEnabled() {
+        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame(enable = true)
     }
 
     private fun setTextTimeElapsed(text: String) {
@@ -197,30 +206,43 @@ class GameViewModel : ViewModel() {
             GameControlTextState.TextTimeElapsed(timeElapsed = text)
     }
 
-    private fun startGameTimer() {
+    private fun setTextMovesNumber(text: String) {
+        _gameControlTextState.value =
+            GameControlTextState.TextMovesNumber(movesNumber = text)
+    }
+
+    private fun gameTimer(stateTimer: Boolean) {
         var time = 0
-        _stateTime = true
+        _stateTimer = stateTimer
 
         viewModelScope.launch(Dispatchers.Default) {
 
-            while (_stateTime) {
+            while (_stateTimer) {
+
                 delay(1000)
+
                 time++
 
                 withContext(Dispatchers.Main) {
-                    setTextTimeElapsed(time.differenceInTime())
+                    if (_stateTimer) setTextTimeElapsed(time.differenceInTime())
+                    else setTextTimeElapsed(INIT_TEXT_FIELDS)
                 }
             }
         }
     }
 
+    private fun startTimer() {
+        gameTimer(true)
+    }
+
     private fun stopTimer() {
-        _stateTime = false
+        gameTimer(false)
     }
 
     companion object {
-        private const val INIT_TEXT_TIME_ELAPSED = "00:00"
-        private const val INIT_TEXT_MOVES_NUMBER = "0"
+        private const val INIT_TEXT_FIELDS = ""
         private const val RESET_MOVES_NUMBER = 0
+        private const val SET_NUMBER_MOVES = 50
+        private const val NUMBER_MOVES_TIME_GAPE = 300
     }
 }

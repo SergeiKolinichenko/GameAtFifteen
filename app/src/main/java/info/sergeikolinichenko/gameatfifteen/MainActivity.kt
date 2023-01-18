@@ -15,15 +15,9 @@ import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
 
 class MainActivity : ComponentActivity() {
 
-    val viewModel by lazy { ViewModelProvider(this)[GameViewModel::class.java] }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-            viewModel.gameBoard.observe(this) {
-//                Log.d("MyLog", "viewModel.gameBoard")
-            }
 
             GameAtFifteenTheme {
                 // A surface container using the 'background' color from the theme

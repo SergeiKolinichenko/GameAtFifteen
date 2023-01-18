@@ -10,8 +10,8 @@ object TimeUtils {
     fun Int.differenceInTime(): String {
         val seconds = this % 60
         val minutes = this / 60 % 60
-        val hours = this / 60 / 60 % 24
-        return String.format( "%02d:%02d:%02d", hours, minutes, seconds )
+//        val hours = this / 60 / 60 % 24
+        return String.format( "%02d:%02d", minutes, seconds )
     }
 
 }
