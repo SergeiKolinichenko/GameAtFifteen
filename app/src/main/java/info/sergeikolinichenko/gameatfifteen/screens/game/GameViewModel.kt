@@ -8,8 +8,8 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameBoard
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.differenceInTime
+import kotlinx.coroutines.*
 
 /** Created by Sergei Kolinichenko on 11.01.2023 at 21:37 (GMT+3) **/
 
@@ -27,6 +27,7 @@ class GameViewModel : ViewModel() {
     val gameBoard: LiveData<Array<Array<GameBoardState>>> = _gameBoard
 
     private var _movesNumber = MutableLiveData(0)
+    private var _stateTime = false
 
     init {
         initGameScreen()
@@ -53,8 +54,8 @@ class GameViewModel : ViewModel() {
     }
 
     private fun gameOver() {
-        resetMovesNumber()
         _gameBoard.value = getGameBoard()
+        resetMovesNumber()
 
     }
 
@@ -114,8 +115,10 @@ class GameViewModel : ViewModel() {
                 val timeGape = (System.currentTimeMillis()) - stepTime
                 if (timeGape > 300) noRepeat.clear()
 
-            } while (step < 10)
+            } while (step < 50)
+
             resetMovesNumber()
+            startGameTimer()
         }
     }
 
@@ -187,6 +190,32 @@ class GameViewModel : ViewModel() {
         _movesNumber.value = RESET_MOVES_NUMBER
         _gameControlTextState.value =
             GameControlTextState.TextMovesNumber(movesNumber = _movesNumber.value.toString())
+    }
+
+    private fun setTextTimeElapsed(text: String) {
+        _gameControlTextState.value =
+            GameControlTextState.TextTimeElapsed(timeElapsed = text)
+    }
+
+    private fun startGameTimer() {
+        var time = 0
+        _stateTime = true
+
+        viewModelScope.launch(Dispatchers.Default) {
+
+            while (_stateTime) {
+                delay(1000)
+                time++
+
+                withContext(Dispatchers.Main) {
+                    setTextTimeElapsed(time.differenceInTime())
+                }
+            }
+        }
+    }
+
+    private fun stopTimer() {
+        _stateTime = false
     }
 
     companion object {

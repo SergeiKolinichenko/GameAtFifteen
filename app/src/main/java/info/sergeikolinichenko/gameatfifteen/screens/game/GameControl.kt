@@ -175,7 +175,8 @@ private fun GameButtons(
             width = 2.dp,
             color = MaterialTheme.colors.primaryVariant
         ),
-        modifier = modifier
+        modifier = modifier,
+
     ) {
         Text(
             text = stringResource(id = titleButton),
