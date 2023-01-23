@@ -4,7 +4,7 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.states
 
 sealed class GameControlTextState {
 
-    object Initial: GameControlTextState()
+    object InitialText: GameControlTextState()
 
     class TextTimeElapsed(
         val timeElapsed: String

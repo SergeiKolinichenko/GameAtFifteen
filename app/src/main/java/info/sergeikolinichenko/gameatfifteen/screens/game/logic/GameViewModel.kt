@@ -1,32 +1,44 @@
-package info.sergeikolinichenko.gameatfifteen.screens.game
+package info.sergeikolinichenko.gameatfifteen.screens.game.logic
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameBoard
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
+import info.sergeikolinichenko.gameatfifteen.usecases.RestoreGameUseCase
+import info.sergeikolinichenko.gameatfifteen.usecases.SaveGameUseCase
 import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.differenceInTime
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import javax.inject.Inject
 
 /** Created by Sergei Kolinichenko on 11.01.2023 at 21:37 (GMT+3) **/
 
-class GameViewModel : ViewModel() {
+class GameViewModel @Inject constructor(
+    private val saveGameUseCase: SaveGameUseCase,
+    private val restoreGameUseCase: RestoreGameUseCase
+) : ViewModel() {
 
     private var _gameControlButtonState =
-        MutableLiveData<GameControlButtonState>(GameControlButtonState.Initial)
+        MutableLiveData<GameControlButtonState>(GameControlButtonState.InitialButtons)
     val gameControlButtonState: LiveData<GameControlButtonState> = _gameControlButtonState
 
     private var _gameControlTextState =
-        MutableLiveData<GameControlTextState>(GameControlTextState.Initial)
+        MutableLiveData<GameControlTextState>(GameControlTextState.InitialText)
     val gameControlTextState: LiveData<GameControlTextState> = _gameControlTextState
 
     private var _gameBoard = MutableLiveData<Array<Array<GameBoardState>>>()
     val gameBoard: LiveData<Array<Array<GameBoardState>>> = _gameBoard
 
     private var _movesNumber = MutableLiveData(0)
+    private var _countTimer = 0
     private var _stateTimer = false
 
     init {
@@ -34,11 +46,19 @@ class GameViewModel : ViewModel() {
     }
 
     private fun initGameScreen() {
-        _gameBoard.value = getGameBoard()
-        _gameControlTextState.value =
-            GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_FIELDS)
-        _gameControlTextState.value =
-            GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_FIELDS)
+        if (testEnableGameBord()) {
+            restoreGame()
+        } else {
+            _gameBoard.value = getGameArray()
+            _movesNumber.value = 0
+            _countTimer = 0
+        }
+
+
+//        _gameControlTextState.value =
+//            GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_FIELDS)
+//        _gameControlTextState.value =
+//            GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_FIELDS)
     }
 
     fun getPressedGameControlButton(state: GameControlButtonState) {
@@ -46,19 +66,12 @@ class GameViewModel : ViewModel() {
         if (state is GameControlButtonState.ButtonStartGame) {
             startGame()
         }
-        if (state == GameControlButtonState.ButtonGameOver) {
+        if (state is GameControlButtonState.ButtonGameOver) {
             gameOver()
         }
-        if (state == GameControlButtonState.ButtonStatistics) {
+        if (state is GameControlButtonState.ButtonStatistics) {
 
         }
-    }
-
-    private fun gameOver() {
-        _gameBoard.value = getGameBoard()
-        resetMovesNumber()
-        setButtonStartGameEnabled()
-        stopTimer()
     }
 
     fun onClickGameButton(number: String) {
@@ -79,19 +92,25 @@ class GameViewModel : ViewModel() {
 
     }
 
+    private fun gameOver() {
+        _gameBoard.value = getGameArray()
+        resetMovesNumber()
+        setButtonStateGameOver()
+        stopTimer()
+    }
+
     private fun startGame() {
 
-        viewModelScope.launch {
+        var step = 0
+        var stepTime = System.currentTimeMillis()
+        val noRepeat = mutableListOf<String>()
 
-            var step = 0
-            var stepTime = System.currentTimeMillis()
-            val noRepeat = mutableListOf<String>()
+        viewModelScope.launch {
 
             do {
 
                 val x = getEmptyX() + (-1..1).random()
                 val y = getEmptyY() + (-1..1).random()
-
                 val xy = "$x$y"
 
                 if (!noRepeat.contains(xy)) {
@@ -114,27 +133,32 @@ class GameViewModel : ViewModel() {
                     }
                 }
 
-                val timeGape = (System.currentTimeMillis()) - stepTime
-                if (timeGape > NUMBER_MOVES_TIME_GAPE) noRepeat.clear()
+                if (longStep(stepTime)) noRepeat.clear()
 
             } while (step < SET_NUMBER_MOVES)
 
-            setButtonStartGameNotEnabled()
+            setButtonStateStartGame()
             resetMovesNumber()
             startTimer()
         }
+    }
+
+    private fun longStep(step: Long): Boolean {
+        val timeGape = (System.currentTimeMillis()) - step
+        return timeGape > NUMBER_MOVES_TIME_GAPE
     }
 
     private fun makeMove(x: Int, y: Int) {
 
         if (isMoveValid(x, y)) {
 
+            _movesNumber.value = _movesNumber.value?.plus(1)
             setMovesNumber()
 
             val emptyX = getEmptyX()
             val emptyY = getEmptyY()
 
-            val board = gameBoard.value ?: getGameBoard()
+            val board = gameBoard.value ?: getGameArray()
 
             board[emptyX][emptyY] = board[x][y]
             board[x][y] = GameBoardState.NoPlate
@@ -142,6 +166,11 @@ class GameViewModel : ViewModel() {
             _gameBoard.value = board.copyOf()
 
         }
+    }
+
+    private fun chekWin(): Boolean {
+        val board = gameBoard.value ?: getGameArray()
+        return (board.contentDeepEquals(getGameArray()))
     }
 
     private fun isMoveValid(x: Int, y: Int): Boolean {
@@ -163,7 +192,7 @@ class GameViewModel : ViewModel() {
 
     private fun getEmptyX(): Int {
         var indexX = 0
-        val board = gameBoard.value ?: getGameBoard()
+        val board = gameBoard.value ?: getGameArray()
         gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexX = x
@@ -174,7 +203,7 @@ class GameViewModel : ViewModel() {
 
     private fun getEmptyY(): Int {
         var indexY = 0
-        val board = gameBoard.value ?: getGameBoard()
+        val board = gameBoard.value ?: getGameArray()
         gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexY = y
@@ -184,7 +213,6 @@ class GameViewModel : ViewModel() {
     }
 
     private fun setMovesNumber() {
-        _movesNumber.value = _movesNumber.value?.plus(1)
         setTextMovesNumber(_movesNumber.value.toString())
     }
 
@@ -193,12 +221,12 @@ class GameViewModel : ViewModel() {
         setTextMovesNumber(INIT_TEXT_FIELDS)
     }
 
-    private fun setButtonStartGameNotEnabled() {
-        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame(enable = false)
+    private fun setButtonStateStartGame() {
+        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame
     }
 
-    private fun setButtonStartGameEnabled() {
-        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame(enable = true)
+    private fun setButtonStateGameOver() {
+        _gameControlButtonState.value = GameControlButtonState.ButtonGameOver
     }
 
     private fun setTextTimeElapsed(text: String) {
@@ -212,7 +240,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun gameTimer(stateTimer: Boolean) {
-        var time = 0
+
         _stateTimer = stateTimer
 
         viewModelScope.launch(Dispatchers.Default) {
@@ -221,10 +249,10 @@ class GameViewModel : ViewModel() {
 
                 delay(1000)
 
-                time++
+                _countTimer++
 
                 withContext(Dispatchers.Main) {
-                    if (_stateTimer) setTextTimeElapsed(time.differenceInTime())
+                    if (_stateTimer) setTextTimeElapsed(_countTimer.differenceInTime())
                     else setTextTimeElapsed(INIT_TEXT_FIELDS)
                 }
             }
@@ -237,6 +265,83 @@ class GameViewModel : ViewModel() {
 
     private fun stopTimer() {
         gameTimer(false)
+        _countTimer = 0
+    }
+
+    fun saveGame() {
+
+        if (_movesNumber.value != 0) {
+            val stateGame = StateGame(
+                state = getGameBoardToJson(),
+                time = _countTimer,
+                moves = _movesNumber.value ?: -1
+            )
+            saveGameUseCase(stateGame)
+        }
+
+    }
+
+    private fun restoreGame() {
+
+        val game = restoreGameUseCase.invoke()
+
+        _gameBoard.value = getJsonToGameBoard(game.state)
+        _countTimer = game.time
+        _movesNumber.value = game.moves
+
+        setMovesNumber()
+        startTimer()
+        setButtonStateStartGame()
+
+        val clearSaveGame = StateGame(
+            state = JSONArray(EMPTY_STRING_ARRAY_ARRAY).toString(),
+            moves = 0,
+            time = 0
+        )
+        saveGameUseCase.invoke(clearSaveGame)
+
+    }
+
+    private fun getGameBoardToJson(): String {
+
+        val board = gameBoard.value ?: getGameArray()
+        val array = EMPTY_STRING_ARRAY_ARRAY
+
+        board.forEachIndexed { x, arrayOfGameBoardStates ->
+            arrayOfGameBoardStates.forEachIndexed { y, gameBoardState ->
+                array[x][y] = gameBoardState.number
+            }
+        }
+
+        return JSONArray(array).toString()
+
+    }
+
+    private fun getJsonToGameBoard(state: String): Array<Array<GameBoardState>> {
+        val board = getGameArray()
+        val jsonArray = JSONArray(state)
+        for (x in 0 until jsonArray.length()) {
+            for (y in 0 until (jsonArray[x] as JSONArray).length()) {
+                getGameArray().forEach { array ->
+                    array.forEach {
+                        if (it.number == (jsonArray[x] as JSONArray)[y]) {
+                            board[x][y] = it
+                        }
+                    }
+                }
+            }
+        }
+        return board
+    }
+
+    private fun testEnableGameBord(): Boolean {
+        val state = restoreGameUseCase.invoke()
+        return (state.moves > 0)
+    }
+
+    override fun onCleared() {
+        saveGame()
+        super.onCleared()
     }
 
     companion object {
@@ -244,5 +349,12 @@ class GameViewModel : ViewModel() {
         private const val RESET_MOVES_NUMBER = 0
         private const val SET_NUMBER_MOVES = 50
         private const val NUMBER_MOVES_TIME_GAPE = 300
+
+        private val EMPTY_STRING_ARRAY_ARRAY = arrayOf(
+            arrayOf("", "", "", ""),
+            arrayOf("", "", "", ""),
+            arrayOf("", "", "", ""),
+            arrayOf("", "", "", "")
+        )
     }
 }

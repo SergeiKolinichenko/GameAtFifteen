@@ -1,6 +1,5 @@
-package info.sergeikolinichenko.gameatfifteen.screens.game
+package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -20,20 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import info.sergeikolinichenko.gameatfifteen.R
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.ButtonGameOver
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.ButtonStartGame
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
+import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.*
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState.*
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 08.01.2023 at 19:51 (GMT+3) **/
 
 @Composable
-fun GameControl() {
-
-    val viewModel: GameViewModel = viewModel()
+fun GameControl(viewModel: GameViewModel) {
 
     Column(
         modifier = Modifier
@@ -49,13 +44,19 @@ fun GameControl() {
                 .fillMaxWidth()
         ) {
 
-            val textGame by viewModel.gameControlTextState.observeAsState(initial = GameControlTextState.Initial)
+            val textGame by viewModel.gameControlTextState.observeAsState(
+                initial = InitialText
+            )
             val textTimeElapsed = remember { mutableStateOf("") }
             val textMovesNumber = remember { mutableStateOf("") }
 
-            when(textGame) {
-                is GameControlTextState.TextTimeElapsed -> textTimeElapsed.value = (textGame as GameControlTextState.TextTimeElapsed).timeElapsed
-                is GameControlTextState.TextMovesNumber -> textMovesNumber.value = (textGame as GameControlTextState.TextMovesNumber).movesNumber
+            when (textGame) {
+                is TextTimeElapsed -> textTimeElapsed.value =
+                    (textGame as TextTimeElapsed).timeElapsed
+
+                is TextMovesNumber -> textMovesNumber.value =
+                    (textGame as TextMovesNumber).movesNumber
+
                 else -> {}
             }
 
@@ -87,17 +88,40 @@ fun GameControl() {
         ) {
 
             val buttonGame by viewModel.gameControlButtonState.observeAsState(
-                initial = GameControlButtonState.Initial
+                initial = InitialButtons
             )
+
+            val stateButtonStatistics: Boolean
+            val stateButtonGameOver: Boolean
+            val stateButtonStartGame: Boolean
+
+            when (buttonGame) {
+                is ButtonStartGame -> {
+                    stateButtonStatistics = false
+                    stateButtonGameOver = true
+                    stateButtonStartGame = false
+                }
+                is ButtonGameOver -> {
+                    stateButtonStatistics = true
+                    stateButtonGameOver = false
+                    stateButtonStartGame = true
+                }
+                else -> {
+                    stateButtonStatistics = true
+                    stateButtonGameOver = false
+                    stateButtonStartGame = true
+                }
+            }
 
             GameButtons(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
                 titleButton = R.string.button_statistics,
+                enableButton = stateButtonStatistics,
                 onClickListener = {
                     viewModel.getPressedGameControlButton(
-                        GameControlButtonState.ButtonStatistics
+                        ButtonStatistics
                     )
                 }
             )
@@ -111,6 +135,7 @@ fun GameControl() {
                 GameButtons(
                     modifier = Modifier.weight(1f),
                     titleButton = R.string.button_game_over,
+                    enableButton = stateButtonGameOver,
                     onClickListener = {
                         viewModel.getPressedGameControlButton(
                             ButtonGameOver
@@ -120,17 +145,13 @@ fun GameControl() {
 
                 Spacer(modifier = Modifier.size(8.dp))
 
-                val enableButtonStartGame =
-                    if (buttonGame is ButtonStartGame)(buttonGame as ButtonStartGame).enable
-                else true
-
                 GameButtons(
                     modifier = Modifier.weight(1f),
                     titleButton = R.string.button_start_game,
-                    enableButton = enableButtonStartGame,
+                    enableButton = stateButtonStartGame,
                     onClickListener = {
                         viewModel.getPressedGameControlButton(
-                            ButtonStartGame()
+                            ButtonStartGame
                         )
                     }
                 )

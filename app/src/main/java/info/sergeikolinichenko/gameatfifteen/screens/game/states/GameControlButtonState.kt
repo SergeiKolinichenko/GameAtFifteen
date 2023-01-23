@@ -4,14 +4,12 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.states
 
 sealed class GameControlButtonState{
 
-    object Initial : GameControlButtonState()
+    object InitialButtons : GameControlButtonState()
 
-    object ButtonStatistics: GameControlButtonState()
+    object ButtonStatistics : GameControlButtonState()
 
-    class ButtonStartGame(
-        val enable: Boolean = true
-    ): GameControlButtonState()
+    object ButtonStartGame : GameControlButtonState()
 
-    object ButtonGameOver: GameControlButtonState()
+    object ButtonGameOver : GameControlButtonState()
 
 }

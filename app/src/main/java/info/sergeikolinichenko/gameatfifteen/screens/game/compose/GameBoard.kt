@@ -1,4 +1,4 @@
-package info.sergeikolinichenko.gameatfifteen.screens.game
+package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -17,16 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
 @Composable
-fun GameBoard() {
+fun GameBoard (viewModel: GameViewModel) {
 
-    val viewModel: GameViewModel = viewModel()
     val plateState by viewModel.gameBoard.observeAsState()
 
     Column(

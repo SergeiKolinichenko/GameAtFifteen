@@ -24,7 +24,7 @@ sealed class GameBoardState(
 
     companion object{
 
-        fun getGameBoard(): Array<Array<GameBoardState>> {
+        fun getGameArray(): Array<Array<GameBoardState>> {
             return arrayOf(
                 arrayOf(PlateOne, PlateTwo, PlateThree, PlateFour),
                 arrayOf(PlateFive, PlateSix, PlateSeven, PlateEight),

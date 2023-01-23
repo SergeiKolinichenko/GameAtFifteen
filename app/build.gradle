@@ -49,6 +49,7 @@ android {
 dependencies {
     implementation project(path: ':domain')
     implementation project(path: ':data')
+    implementation 'androidx.appcompat:appcompat:1.6.0'
 
     def composeBom = platform('androidx.compose:compose-bom:2022.12.00')
     implementation composeBom
