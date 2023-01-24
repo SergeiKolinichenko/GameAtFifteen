@@ -28,7 +28,10 @@ import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 /** Created by Sergei Kolinichenko on 08.01.2023 at 19:51 (GMT+3) **/
 
 @Composable
-fun GameControl(viewModel: GameViewModel) {
+fun GameControl(
+    viewModel: GameViewModel,
+    clickButtonStatistics: () -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -120,9 +123,7 @@ fun GameControl(viewModel: GameViewModel) {
                 titleButton = R.string.button_statistics,
                 enableButton = stateButtonStatistics,
                 onClickListener = {
-                    viewModel.getPressedGameControlButton(
-                        ButtonStatistics
-                    )
+                    clickButtonStatistics()
                 }
             )
 

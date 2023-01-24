@@ -43,6 +43,9 @@ class GameViewModel @Inject constructor(
     val showWinDialog: LiveData<WinDialogButtonState> =
         _showWinDialog
 
+    private var _cancelApp = MutableLiveData<Unit>()
+    val cancelApp: LiveData<Unit> = _cancelApp
+
     private var _movesNumber = MutableLiveData(0)
     private var _countTimer = 0
     private var _stateTimer = false
@@ -59,31 +62,21 @@ class GameViewModel @Inject constructor(
             _movesNumber.value = 0
             _countTimer = 0
         }
-
-
-//        _gameControlTextState.value =
-//            GameControlTextState.TextTimeElapsed(timeElapsed = INIT_TEXT_FIELDS)
-//        _gameControlTextState.value =
-//            GameControlTextState.TextMovesNumber(movesNumber = INIT_TEXT_FIELDS)
     }
 
     fun getPressedGameControlButton(state: GameControlButtonState) {
 
         if (state is GameControlButtonState.ButtonStartGame) {
             startGame()
-        }
-        if (state is GameControlButtonState.ButtonGameOver) {
+        } else {
             gameOver()
-        }
-        if (state is GameControlButtonState.ButtonStatistics) {
-
         }
     }
 
     fun onClickWinDialogButton(state: WinDialogButtonState) {
-        when(state) {
+        when (state) {
             WinDialogButtonState.WinDialogButtonStart -> startGame()
-            WinDialogButtonState.WinDialogButtonCancel -> gameOver()
+            WinDialogButtonState.WinDialogButtonCancel -> cancelApp()
             else -> {}
         }
         setHideWinDialog()
@@ -105,6 +98,10 @@ class GameViewModel @Inject constructor(
 
         makeMove(indexX, indexY)
 
+    }
+
+    private fun cancelApp() {
+        _cancelApp.value = Unit
     }
 
     private fun gameOver() {
@@ -150,8 +147,9 @@ class GameViewModel @Inject constructor(
 
                 if (longStep(stepTime)) noRepeat.clear()
 
-            } while (step < SET_NUMBER_MOVES)
+            } while (step < NUMBER_OF_MOVES)
 
+            _countTimer = RESET_INT_COUNTER_TO_ZERO
             setButtonStateStartGame()
             resetMovesNumber()
             startTimer()
@@ -243,8 +241,8 @@ class GameViewModel @Inject constructor(
     }
 
     private fun resetMovesNumber() {
-        _movesNumber.value = RESET_MOVES_NUMBER
-        setTextMovesNumber(INIT_TEXT_FIELDS)
+        _movesNumber.value = RESET_INT_COUNTER_TO_ZERO
+        setTextMovesNumber(RESET_STRING_TO_EMPTY)
     }
 
     private fun setButtonStateStartGame() {
@@ -279,7 +277,7 @@ class GameViewModel @Inject constructor(
 
                 withContext(Dispatchers.Main) {
                     if (_stateTimer) setTextTimeElapsed(_countTimer.differenceInTime())
-                    else setTextTimeElapsed(INIT_TEXT_FIELDS)
+                    else setTextTimeElapsed(RESET_STRING_TO_EMPTY)
                 }
             }
         }
@@ -366,9 +364,9 @@ class GameViewModel @Inject constructor(
     }
 
     companion object {
-        private const val INIT_TEXT_FIELDS = ""
-        private const val RESET_MOVES_NUMBER = 0
-        private const val SET_NUMBER_MOVES = 50
+        private const val RESET_STRING_TO_EMPTY = ""
+        private const val RESET_INT_COUNTER_TO_ZERO = 0
+        private const val NUMBER_OF_MOVES = 50
         private const val NUMBER_MOVES_TIME_GAPE = 300
 
         private val EMPTY_STRING_ARRAY_ARRAY = arrayOf(
