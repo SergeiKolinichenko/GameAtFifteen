@@ -28,7 +28,7 @@ fun GameScoreCard() {
     ) {
 
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -41,11 +41,21 @@ fun GameScoreCard() {
                     color = MaterialTheme.colors.primaryVariant
                 )
             ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ResponsiveGameScoreCardText(
+                        text = "15.01.23",
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                    ResponsiveGameScoreCardText(
+                        text = "19:22",
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
 
-                ResponsiveGameScoreCardText(
-                    text = "15.01.23 / 19:22",
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
+
             }
 
             Card(
@@ -58,10 +68,21 @@ fun GameScoreCard() {
                 )
             ) {
 
-                ResponsiveGameScoreCardText(
-                    text = "0555 / 02.30.59",
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ResponsiveGameScoreCardText(
+                        text = "0555",
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                    ResponsiveGameScoreCardText(
+                        text = "0.20.59",
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+
+
             }
 
         }

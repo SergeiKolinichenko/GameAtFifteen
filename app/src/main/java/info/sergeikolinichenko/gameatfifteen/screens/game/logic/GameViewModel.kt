@@ -9,6 +9,7 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
 import info.sergeikolinichenko.gameatfifteen.usecases.RestoreGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SaveGameUseCase
 import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.differenceInTime
@@ -36,6 +37,11 @@ class GameViewModel @Inject constructor(
 
     private var _gameBoard = MutableLiveData<Array<Array<GameBoardState>>>()
     val gameBoard: LiveData<Array<Array<GameBoardState>>> = _gameBoard
+
+    private var _showWinDialog =
+        MutableLiveData<WinDialogButtonState>(WinDialogButtonState.WinDialogInitial)
+    val showWinDialog: LiveData<WinDialogButtonState> =
+        _showWinDialog
 
     private var _movesNumber = MutableLiveData(0)
     private var _countTimer = 0
@@ -72,6 +78,15 @@ class GameViewModel @Inject constructor(
         if (state is GameControlButtonState.ButtonStatistics) {
 
         }
+    }
+
+    fun onClickWinDialogButton(state: WinDialogButtonState) {
+        when(state) {
+            WinDialogButtonState.WinDialogButtonStart -> startGame()
+            WinDialogButtonState.WinDialogButtonCancel -> gameOver()
+            else -> {}
+        }
+        setHideWinDialog()
     }
 
     fun onClickGameButton(number: String) {
@@ -165,12 +180,23 @@ class GameViewModel @Inject constructor(
 
             _gameBoard.value = board.copyOf()
 
+            if (chekWin()) {
+                setShowWinDialog()
+            }
         }
     }
 
     private fun chekWin(): Boolean {
         val board = gameBoard.value ?: getGameArray()
         return (board.contentDeepEquals(getGameArray()))
+    }
+
+    private fun setShowWinDialog() {
+        _showWinDialog.value = WinDialogButtonState.WinDialogButtonStart
+    }
+
+    private fun setHideWinDialog() {
+        _showWinDialog.value = WinDialogButtonState.WinDialogInitial
     }
 
     private fun isMoveValid(x: Int, y: Int): Boolean {
@@ -337,11 +363,6 @@ class GameViewModel @Inject constructor(
     private fun testEnableGameBord(): Boolean {
         val state = restoreGameUseCase.invoke()
         return (state.moves > 0)
-    }
-
-    override fun onCleared() {
-        saveGame()
-        super.onCleared()
     }
 
     companion object {

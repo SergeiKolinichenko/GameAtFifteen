@@ -10,5 +10,7 @@
 <!--    <string name="text_time_elapsed">Game time:  %1$s</string>-->
     <string name="text_time_elapsed">Game time:</string>
     <string name="text_move_number">Moves made:</string>
+    <string name="win_dilog_title_button_cancel">Cancel</string>
+    <string name="win_dilog_title_button_start">Start</string>
 
 </resources>

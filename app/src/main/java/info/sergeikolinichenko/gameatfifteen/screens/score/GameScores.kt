@@ -34,18 +34,37 @@ fun GameScore() {
             backgroundColor = MaterialTheme.colors.background
         ) {
 
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    ResponsiveGameScoreText(text = "Date / Time")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ResponsiveGameScoreText(text = "Date")
+                        ResponsiveGameScoreText(text = "Time")
+                    }
+
                 }
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    ResponsiveGameScoreText(text = "Movies / Times")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ResponsiveGameScoreText(text = "Movies")
+                        ResponsiveGameScoreText(text = "Timer")
+                    }
+
                 }
             }
 

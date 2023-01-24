@@ -8,22 +8,32 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
-import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
+import info.sergeikolinichenko.gameatfifteen.R
+import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
 import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 23.01.2023 at 20:28 (GMT+3) **/
 
 @Composable
-fun WinDialog(enable: Boolean = false) {
+fun WinDialog(
+    state: WinDialogButtonState,
+    viewModel: GameViewModel
+) {
+
+    val enable = when(state) {
+        WinDialogButtonState.WinDialogInitial -> false
+        WinDialogButtonState.WinDialogButtonStart -> true
+        WinDialogButtonState.WinDialogButtonCancel -> true
+    }
 
     if (enable) {
 
@@ -62,9 +72,9 @@ fun WinDialog(enable: Boolean = false) {
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 4.dp),
-                        titleText = "Cancel",
+                        state = WinDialogButtonState.WinDialogButtonCancel,
                         onClickListener = {
-
+                            viewModel.onClickWinDialogButton(it)
                         }
                     )
 
@@ -72,9 +82,9 @@ fun WinDialog(enable: Boolean = false) {
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 4.dp),
-                        titleText = "Start",
+                        state = WinDialogButtonState.WinDialogButtonStart,
                         onClickListener = {
-
+                            viewModel.onClickWinDialogButton(it)
                         }
                     )
                 }
@@ -87,14 +97,15 @@ fun WinDialog(enable: Boolean = false) {
 @Composable
 private fun DialogButton(
     modifier: Modifier = Modifier,
-    titleText: String,
-    onClickListener: () -> Unit
+    state: WinDialogButtonState,
+    onClickListener: (state: WinDialogButtonState) -> Unit
 ) {
+
     Button(
         modifier = modifier,
-        onClick = { onClickListener() }
+        onClick = { onClickListener(state) }
     ) {
-        ResponsiveTitleText(text = titleText)
+        ResponsiveTitleText(text = stringResource(id = state.titleButton))
     }
 }
 
@@ -111,22 +122,22 @@ private fun ResponsiveTitleText(
     )
 }
 
-@Preview
-@Composable
-fun PreviewThemeLightWinDialog() {
-    GameAtFifteenTheme(
-        darkTheme = false
-    ) {
-        WinDialog()
-    }
-}
-
-@Preview
-@Composable
-fun PreviewThemeDarkWinDialog() {
-    GameAtFifteenTheme(
-        darkTheme = true
-    ) {
-        WinDialog()
-    }
-}
+//@Preview
+//@Composable
+//fun PreviewThemeLightWinDialog() {
+//    GameAtFifteenTheme(
+//        darkTheme = false
+//    ) {
+//        WinDialog()
+//    }
+//}
+//
+//@Preview
+//@Composable
+//fun PreviewThemeDarkWinDialog() {
+//    GameAtFifteenTheme(
+//        darkTheme = true
+//    ) {
+//        WinDialog()
+//    }
+//}
