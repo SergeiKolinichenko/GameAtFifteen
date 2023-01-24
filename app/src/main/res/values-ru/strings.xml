@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Пятнашка</string>
+    <string name="win_dialog_message">Вы можете достигнуть лучшего результата!\nНачать новую игру?</string>
+    <string name="win_dialog_congratulations">Поздравляем!\nВы победили!</string>
+    <string name="button_statistics">Статистика</string>
+    <string name="button_game_over">Новая\nигра</string>
+    <string name="button_start_game">Начать\nигру</string>
+    <string name="text_time_elapsed">Таймер:</string>
+    <string name="text_move_number">Ходы:</string>
+    <string name="win_dialog_title_button_cancel">Выход</string>
+    <string name="win_dialog_title_button_start">Старт</string>
+</resources>

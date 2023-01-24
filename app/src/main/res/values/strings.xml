@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GameAtFifteen</string>
+    <string name="app_name">Fifteen</string>
 
     <!--  Title for the buttons in the GameControl  -->
     <string name="button_statistics">Statistics</string>
@@ -8,9 +8,11 @@
 
     <!-- Text for the Texts in the GameControl  -->
 <!--    <string name="text_time_elapsed">Game time:  %1$s</string>-->
-    <string name="text_time_elapsed">Game time:</string>
-    <string name="text_move_number">Moves made:</string>
-    <string name="win_dilog_title_button_cancel">Cancel</string>
-    <string name="win_dilog_title_button_start">Start</string>
+    <string name="text_time_elapsed">Timer:</string>
+    <string name="text_move_number">Moves:</string>
+    <string name="win_dialog_title_button_cancel">Cancel</string>
+    <string name="win_dialog_title_button_start">Start</string>
+    <string name="win_dialog_congratulations">Congratulations!\nYou have won!</string>
+    <string name="win_dialog_message">You can achieve the best result!\nStart a new game?</string>
 
 </resources>

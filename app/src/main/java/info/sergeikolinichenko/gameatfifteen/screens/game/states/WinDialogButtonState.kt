@@ -13,11 +13,11 @@ sealed class WinDialogButtonState(
     )
 
     object WinDialogButtonCancel: WinDialogButtonState(
-        titleButton = R.string.win_dilog_title_button_cancel
+        titleButton = R.string.win_dialog_title_button_cancel
     )
 
     object WinDialogButtonStart: WinDialogButtonState(
-        titleButton = R.string.win_dilog_title_button_start
+        titleButton = R.string.win_dialog_title_button_start
     )
 
     companion object{

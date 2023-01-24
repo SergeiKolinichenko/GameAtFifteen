@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Петнадесет</string>
+    <string name="win_dialog_message">Можете да постигнете най-добрия резултат!\nЗапочнете нова игра?</string>
+    <string name="win_dialog_congratulations">Честито!\nТи спечели!</string>
+    <string name="button_statistics">Статистика</string>
+    <string name="button_game_over">Нова\nигра</string>
+    <string name="button_start_game">Започни\nиграта</string>
+    <string name="text_time_elapsed">Таймер:</string>
+    <string name="text_move_number">Се движи:</string>
+    <string name="win_dialog_title_button_cancel">Изход</string>
+    <string name="win_dialog_title_button_start">Започнете</string>
+</resources>

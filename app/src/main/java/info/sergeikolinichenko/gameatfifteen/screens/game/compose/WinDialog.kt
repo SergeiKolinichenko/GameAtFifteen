@@ -46,7 +46,7 @@ fun WinDialog(
             title = {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Congratulations!\nYou have won!",
+                    text = stringResource(R.string.win_dialog_congratulations),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.W900,
                     textAlign = TextAlign.Center
@@ -55,8 +55,7 @@ fun WinDialog(
             text = {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "You can achieve the best result! \n" +
-                            " Start a new game?",
+                    text = stringResource(R.string.win_dialog_message),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
