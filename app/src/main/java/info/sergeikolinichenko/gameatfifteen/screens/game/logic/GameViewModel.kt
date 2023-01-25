@@ -43,6 +43,9 @@ class GameViewModel @Inject constructor(
     val showWinDialog: LiveData<WinDialogButtonState> =
         _showWinDialog
 
+    private var _orientationScreen = MutableLiveData<Int>()
+    val orientationScreen: LiveData<Int> = _orientationScreen
+
     private var _cancelApp = MutableLiveData<Unit>()
     val cancelApp: LiveData<Unit> = _cancelApp
 
@@ -62,6 +65,10 @@ class GameViewModel @Inject constructor(
             _movesNumber.value = 0
             _countTimer = 0
         }
+    }
+
+    fun getOrientationScreen(orientation: Int) {
+        _orientationScreen.value = orientation
     }
 
     fun getPressedGameControlButton(state: GameControlButtonState) {

@@ -10,4 +10,8 @@
     <string name="text_move_number">Ходы:</string>
     <string name="win_dialog_title_button_cancel">Выход</string>
     <string name="win_dialog_title_button_start">Старт</string>
+    <string name="game_date_title">Дата</string>
+    <string name="game_time_title">Время</string>
+    <string name="game_moves_title">Ходов</string>
+    <string name="game_taimer_title">Таймер</string>
 </resources>

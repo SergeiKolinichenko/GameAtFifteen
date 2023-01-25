@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,7 +8,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import info.sergeikolinichenko.gameatfifteen.GameActivity.Companion.VERTICAL_ORIENTATION
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
 
@@ -15,7 +15,6 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButton
 
 @Composable
 fun GameScreen(
-    orientation: String,
     viewModel: GameViewModel,
     clickButtonStatistics: () -> Unit
 ) {
@@ -23,7 +22,9 @@ fun GameScreen(
     val showWinDialog by
     viewModel.showWinDialog.observeAsState(WinDialogButtonState.WinDialogInitial)
 
-    if (orientation == VERTICAL_ORIENTATION) {
+    val orientation by viewModel.orientationScreen.observeAsState()
+
+    if (orientation == ORIENTATION_PORTRAIT) {
         VerticalOrientation(
             viewModel = viewModel,
             clickButtonStatistics = clickButtonStatistics
@@ -45,9 +46,10 @@ private fun HorizontalOrientation(
 ) {
 
 
-    Row(        modifier = Modifier
-        .padding(8.dp)
-        .fillMaxSize()
+    Row(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize()
     ) {
         Box(
             modifier = Modifier.weight(1f),

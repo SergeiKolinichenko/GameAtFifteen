@@ -14,5 +14,9 @@
     <string name="win_dialog_title_button_start">Start</string>
     <string name="win_dialog_congratulations">Congratulations!\nYou have won!</string>
     <string name="win_dialog_message">You can achieve the best result!\nStart a new game?</string>
+    <string name="game_date_title">Date</string>
+    <string name="game_time_title">Time</string>
+    <string name="game_moves_title">Moves</string>
+    <string name="game_taimer_title">Timer</string>
 
 </resources>

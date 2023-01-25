@@ -10,4 +10,8 @@
     <string name="text_move_number">Се движи:</string>
     <string name="win_dialog_title_button_cancel">Изход</string>
     <string name="win_dialog_title_button_start">Започнете</string>
+    <string name="game_date_title">Дата</string>
+    <string name="game_time_title">Време</string>
+    <string name="game_moves_title">Стъпки</string>
+    <string name="game_taimer_title">Таймер</string>
 </resources>
