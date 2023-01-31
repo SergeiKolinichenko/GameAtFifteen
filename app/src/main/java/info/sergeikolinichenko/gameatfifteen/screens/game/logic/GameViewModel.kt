@@ -4,27 +4,28 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
-import info.sergeikolinichenko.gameatfifteen.usecases.RestoreGameUseCase
-import info.sergeikolinichenko.gameatfifteen.usecases.SaveGameUseCase
-import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.differenceInTime
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
+import info.sergeikolinichenko.gameatfifteen.usecases.SetGameUseCase
+import info.sergeikolinichenko.gameatfifteen.usecases.SetScoreGameUseCase
+import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.intToTimeString
+import kotlinx.coroutines.*
 import org.json.JSONArray
 import javax.inject.Inject
+import kotlin.random.Random
 
 /** Created by Sergei Kolinichenko on 11.01.2023 at 21:37 (GMT+3) **/
 
 class GameViewModel @Inject constructor(
-    private val saveGameUseCase: SaveGameUseCase,
-    private val restoreGameUseCase: RestoreGameUseCase
+    private val setGame: SetGameUseCase,
+    private val getGame: GetGameUseCase,
+    private val setScoreGame: SetScoreGameUseCase
 ) : ViewModel() {
 
     private var _gameControlButtonState =
@@ -54,7 +55,25 @@ class GameViewModel @Inject constructor(
     private var _stateTimer = false
 
     init {
+//        initDb()
         initGameScreen()
+    }
+
+    private fun initDb() {
+        var score: ScoreGame
+        CoroutineScope(Dispatchers.Default).launch {
+            for (i in 0..500) {
+                score = ScoreGame(
+                    timeStamp = System.currentTimeMillis(),
+                    doneMoves = Random.nextInt(100, 500),
+                    timeUsed = Random.nextInt(120, 86400)
+                )
+                delay(1000)
+                score.let {
+                    setScoreGame.invoke(scoreGame = score)
+                }
+            }
+        }
     }
 
     private fun initGameScreen() {
@@ -186,8 +205,20 @@ class GameViewModel @Inject constructor(
             _gameBoard.value = board.copyOf()
 
             if (chekWin()) {
+                saveScoreGame()
                 setShowWinDialog()
             }
+        }
+    }
+
+    private fun saveScoreGame() {
+        val scoreGame = ScoreGame(
+            timeStamp = System.currentTimeMillis(),
+            doneMoves = _movesNumber.value ?: -1,
+            timeUsed = _countTimer
+        )
+        viewModelScope.launch {
+            setScoreGame.invoke(scoreGame = scoreGame)
         }
     }
 
@@ -283,7 +314,7 @@ class GameViewModel @Inject constructor(
                 _countTimer++
 
                 withContext(Dispatchers.Main) {
-                    if (_stateTimer) setTextTimeElapsed(_countTimer.differenceInTime())
+                    if (_stateTimer) setTextTimeElapsed(_countTimer.intToTimeString())
                     else setTextTimeElapsed(RESET_STRING_TO_EMPTY)
                 }
             }
@@ -307,14 +338,14 @@ class GameViewModel @Inject constructor(
                 time = _countTimer,
                 moves = _movesNumber.value ?: -1
             )
-            saveGameUseCase(stateGame)
+            setGame(stateGame)
         }
 
     }
 
     private fun restoreGame() {
 
-        val game = restoreGameUseCase.invoke()
+        val game = getGame.invoke()
 
         _gameBoard.value = getJsonToGameBoard(game.state)
         _countTimer = game.time
@@ -329,7 +360,7 @@ class GameViewModel @Inject constructor(
             moves = 0,
             time = 0
         )
-        saveGameUseCase.invoke(clearSaveGame)
+        setGame.invoke(clearSaveGame)
 
     }
 
@@ -366,7 +397,7 @@ class GameViewModel @Inject constructor(
     }
 
     private fun testEnableGameBord(): Boolean {
-        val state = restoreGameUseCase.invoke()
+        val state = getGame.invoke()
         return (state.moves > 0)
     }
 

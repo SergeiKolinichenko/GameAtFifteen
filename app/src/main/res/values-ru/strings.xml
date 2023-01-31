@@ -13,5 +13,10 @@
     <string name="game_date_title">Дата</string>
     <string name="game_time_title">Время</string>
     <string name="game_moves_title">Ходов</string>
-    <string name="game_taimer_title">Таймер</string>
+    <string name="game_timer_title">Таймер</string>
+    <string name="text_delete_item">УДАЛИТЬ ЭЛЕМЕНТ</string>
+    <string name="button_sort_by_moves">СОРТИРОВАТЬ ПО ХОДАМ</string>
+    <string name="button_sort_by_time">СОРТИРОВАТЬ ПО ВРЕМЕНИ</string>
+    <string name="button_delete_all_scores_item">УДАЛИТЬ ВСЁ</string>
+    <string name="button_sort_by_date">СОРТИРОВАТЬ ПО ДАТЕ</string>
 </resources>

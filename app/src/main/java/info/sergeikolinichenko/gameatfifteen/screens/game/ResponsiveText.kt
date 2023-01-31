@@ -1,4 +1,4 @@
-package info.sergeikolinichenko.gameatfifteen.utils
+package info.sergeikolinichenko.gameatfifteen.screens.game
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text

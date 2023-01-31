@@ -43,7 +43,7 @@ fun ScoreScreenTitle(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ResponsiveGameScoreText(text = stringResource(R.string.game_moves_title))
-                    ResponsiveGameScoreText(text = stringResource(R.string.game_taimer_title))
+                    ResponsiveGameScoreText(text = stringResource(R.string.game_timer_title))
                 }
         }
 

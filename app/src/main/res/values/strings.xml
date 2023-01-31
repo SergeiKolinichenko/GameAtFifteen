@@ -17,6 +17,11 @@
     <string name="game_date_title">Date</string>
     <string name="game_time_title">Time</string>
     <string name="game_moves_title">Moves</string>
-    <string name="game_taimer_title">Timer</string>
+    <string name="game_timer_title">Timer</string>
+    <string name="text_delete_item">DELETE ITEM</string>
+    <string name="button_sort_by_moves">SORT BY MOVES</string>
+    <string name="button_sort_by_time">SORT BY TIME</string>
+    <string name="button_sort_by_date">SORT BY DATE</string>
+    <string name="button_delete_all_scores_item">DELETE EVERYTHING</string>
 
 </resources>

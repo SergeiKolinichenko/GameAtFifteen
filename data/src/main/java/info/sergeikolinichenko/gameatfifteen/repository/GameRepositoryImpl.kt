@@ -1,7 +1,11 @@
 package info.sergeikolinichenko.gameatfifteen.repository
 
 import android.content.SharedPreferences
-import info.sergeikolinichenko.gameatfifteen.models.MapperStateGamePrefs
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
+import info.sergeikolinichenko.gameatfifteen.database.GameDao
+import info.sergeikolinichenko.gameatfifteen.models.MapperGameModels
+import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGamePrefModel
 import javax.inject.Inject
@@ -9,13 +13,14 @@ import javax.inject.Inject
 /** Created by Sergei Kolinichenko on 18.01.2023 at 21:21 (GMT+3) **/
 
 class GameRepositoryImpl @Inject constructor(
-    private val mapperPrefs: MapperStateGamePrefs,
-    private val sharedPreferences: SharedPreferences
+    private val mapper: MapperGameModels,
+    private val sharedPreferences: SharedPreferences,
+    private val dao: GameDao
 ) : GameRepository {
 
-    override fun saveStateGame(stateGame: StateGame) {
+    override fun setStateGame(stateGame: StateGame) {
 
-        mapperPrefs.mapModelToPrefsModel(stateGame).apply {
+        mapper.mapEntityToPrefsModel(stateGame).apply {
             with(sharedPreferences.edit()) {
                 putString(GAME_BUTTONS_STATE, state).apply()
                 putInt(GAME_MOVES_NUMBER, moves).apply()
@@ -24,10 +29,10 @@ class GameRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun restoreStateGame(): StateGame {
+    override fun getStateGame(): StateGame {
 
         with(sharedPreferences) {
-            return mapperPrefs.mapPrefsModelToModel(
+            return mapper.mapPrefsModelToEntity(
                 StateGamePrefModel(
                     state = getString(GAME_BUTTONS_STATE, ERROR_STRING) ?: "",
                     moves = getInt(GAME_MOVES_NUMBER, ERROR_INT),
@@ -37,13 +42,43 @@ class GameRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun setListScoresSort(sort: String) {
+        sharedPreferences.edit().putString(GAME_LIST_SCORE_SORT, sort).apply()
+    }
+
+    override fun getListScoresSort(): String {
+        return sharedPreferences.getString(GAME_LIST_SCORE_SORT, ERROR_STRING) ?: ""
+    }
+
+    override suspend fun setScoreGame(scoreGame: ScoreGame) {
+        dao.addScore(mapper.mapEntityToDbModel(scoreGame))
+    }
+
+    override suspend fun deleteScoreGame(scoreGame: ScoreGame) {
+        dao.deleteScore(mapper.mapEntityToDbModel(scoreGame))
+    }
+
+    override suspend fun deleteAllScoresGame() {
+        dao.deleteAllScores()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> getListScoreGame(): T {
+        val list: LiveData<List<ScoreGame>> =
+            Transformations.map(dao.getListScores()) {
+                mapper.mapListDbModelToListEntity(it)
+            }
+        return list as T
+    }
+
     companion object {
         private const val GAME_MOVES_NUMBER = "moves_number"
         private const val GAME_TIME_ELAPSED = "time_elapsed"
         private const val GAME_BUTTONS_STATE = "buttons_state"
+        private const val GAME_LIST_SCORE_SORT = "list_score_sort"
 
         private const val ERROR_INT = -1
-        private const val ERROR_STRING = "error_shar_pref"
+        private const val ERROR_STRING = ""
     }
 
 }

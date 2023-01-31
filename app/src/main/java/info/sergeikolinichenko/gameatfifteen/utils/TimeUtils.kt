@@ -7,11 +7,21 @@ import java.util.*
 
 object TimeUtils {
 
-    fun Int.differenceInTime(): String {
+    fun Int.intToTimeString(): String {
         val seconds = this % 60
         val minutes = this / 60 % 60
-//        val hours = this / 60 / 60 % 24
-        return String.format( "%02d:%02d", minutes, seconds )
+        val hours = this / 60 / 60 % 24
+        return String.format( "%1d:%02d:%02d", hours, minutes, seconds )
+    }
+
+    fun Long.getDate(): String {
+        val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+        return dateFormat.format(this)
+    }
+
+    fun Long.getTime(): String {
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return timeFormat.format(this)
     }
 
 }

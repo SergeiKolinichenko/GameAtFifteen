@@ -23,7 +23,7 @@ import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.*
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState.*
-import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
+import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 08.01.2023 at 19:51 (GMT+3) **/
 
@@ -215,7 +215,7 @@ private fun GameButtons(
     ) {
         Text(
             text = stringResource(id = titleButton),
-            fontSize = 26.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
@@ -230,7 +230,7 @@ private fun ResponsiveTitleText(
     ResponsiveText(
         modifier = modifier,
         text = text,
-        textStyle = TextStyle(fontSize = 26.sp, fontWeight = FontWeight.Bold),
+        textStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
         textAlign = TextAlign.End
     )
 }

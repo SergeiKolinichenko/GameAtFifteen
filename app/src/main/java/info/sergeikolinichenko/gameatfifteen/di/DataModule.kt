@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import info.sergeikolinichenko.gameatfifteen.database.AppDatabase
+import info.sergeikolinichenko.gameatfifteen.database.GameDao
 import info.sergeikolinichenko.gameatfifteen.preferences.GameSharedPreferences
 import info.sergeikolinichenko.gameatfifteen.repository.GameRepository
 import info.sergeikolinichenko.gameatfifteen.repository.GameRepositoryImpl
@@ -16,7 +18,7 @@ interface DataModule {
 
     @Binds
     @ApplicationScope
-    fun bindNoteRepository(impl: GameRepositoryImpl): GameRepository
+    fun bindGameRepository(impl: GameRepositoryImpl): GameRepository
 
 
     companion object {
@@ -24,6 +26,11 @@ interface DataModule {
         @Provides
         fun provideSharedPreferences(application: Application): SharedPreferences {
             return GameSharedPreferences.getInstance(application)
+        }
+
+        @Provides
+        fun provideGameDao(application: Application): GameDao {
+            return AppDatabase.getInstance(application).gameDao()
         }
 
     }

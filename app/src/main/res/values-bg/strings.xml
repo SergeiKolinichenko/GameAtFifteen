@@ -13,5 +13,10 @@
     <string name="game_date_title">Дата</string>
     <string name="game_time_title">Време</string>
     <string name="game_moves_title">Стъпки</string>
-    <string name="game_taimer_title">Таймер</string>
+    <string name="game_timer_title">Таймер</string>
+    <string name="text_delete_item">ИЗТРИВАНЕ НА ЕЛЕМЕНТ</string>
+    <string name="button_sort_by_moves">СОРТИРАНЕ ПО ХОДОВЕ</string>
+    <string name="button_sort_by_time">СОРТИРАНЕ ПО ВРЕМЕ</string>
+    <string name="button_delete_all_scores_item">ИЗТРИЕТЕ ВСИЧКО</string>
+    <string name="button_sort_by_date">СОРТИРАНЕ ПО ДАТА</string>
 </resources>

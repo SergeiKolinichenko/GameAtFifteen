@@ -17,9 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
-import info.sergeikolinichenko.gameatfifteen.utils.ResponsiveText
+import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 23.01.2023 at 20:28 (GMT+3) **/
 
