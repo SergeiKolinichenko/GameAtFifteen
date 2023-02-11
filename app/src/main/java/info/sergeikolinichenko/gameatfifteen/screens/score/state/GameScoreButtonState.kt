@@ -23,4 +23,13 @@ sealed class GameScoreButtonState(
     object ButtonDeleteEverything: GameScoreButtonState(
         titleButton = R.string.button_delete_all_scores_item
     )
+
+    companion object{
+        val listGameScoreButtonState = listOf(
+            ButtonSortByMoves,
+            ButtonSortByTimer,
+            ButtonSortByDate,
+            ButtonDeleteEverything
+        )
+    }
 }

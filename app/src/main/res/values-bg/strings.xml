@@ -19,4 +19,5 @@
     <string name="button_sort_by_time">СОРТИРАНЕ ПО ВРЕМЕ</string>
     <string name="button_delete_all_scores_item">ИЗТРИЕТЕ ВСИЧКО</string>
     <string name="button_sort_by_date">СОРТИРАНЕ ПО ДАТА</string>
+    <string name="open_score_menu">Отворете менюто</string>
 </resources>

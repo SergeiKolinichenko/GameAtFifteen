@@ -10,13 +10,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.score.state.GameScoreButtonState
+import info.sergeikolinichenko.gameatfifteen.screens.score.state.GameScoreButtonState.Companion.listGameScoreButtonState
 import info.sergeikolinichenko.gameatfifteen.ui.theme.Shapes
 
 /** Created by Sergei Kolinichenko on 25.01.2023 at 19:57 (GMT+3) **/
@@ -29,89 +29,45 @@ fun GameScoreButtons(
     val animationState by viewModel.animationState.observeAsState(false)
     val transition = updateTransition(targetState = animationState, label = "")
 
-    val yOffset by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 250) },
-        label = ""
-    ) {
-        if (it) 0f else 300f
-    }
-
-    val alpha by transition.animateFloat(
+    val xOffset by transition.animateInt(
         transitionSpec = { tween(durationMillis = 500) },
         label = ""
     ) {
-        if (it) 1f else 0f
+        if (it) 0 else 310
     }
 
-    val xSize by transition.animateInt(
-        transitionSpec = { tween(1500) },
+    val yOffset by transition.animateInt(
+        transitionSpec = { tween(durationMillis = 500) },
         label = ""
     ) {
-        if (it) 310 else 0
-    }
-
-    val ySize by transition.animateInt(
-        transitionSpec = { tween(1500) },
-        label = ""
-    ) {
-        if (it) 220 else 0
+        if (it) 0 else 220
     }
 
     Box(
         modifier = Modifier
-            .padding(start = 4.dp, end = 4.dp, bottom = 20.dp)
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+            .offset(xOffset.dp, yOffset.dp)
+            .padding(10.dp)
             .fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = Alignment.BottomEnd
     ) {
 
         Column(
-            modifier = Modifier
-                .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy
-                    )
-                )
-                .offset(y = yOffset.dp)
-                .alpha(alpha)
-                .height(ySize.dp)
-                .width(xSize.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            ModuleButton(
-                titleButton = GameScoreButtonState.ButtonSortByDate.titleButton,
-                onClick = {
-                    viewModel.handlerButtons(GameScoreButtonState.ButtonSortByDate)
-                }
-            )
+            for (item in listGameScoreButtonState) {
 
-            Spacer(modifier = Modifier.size(4.dp))
+                ModuleButton(stateButton = item, onClick = {
+                    viewModel.handlerButtons(state = it)
+                })
 
-            ModuleButton(
-                titleButton = GameScoreButtonState.ButtonSortByMoves.titleButton,
-                onClick = {
-                    viewModel.handlerButtons(GameScoreButtonState.ButtonSortByMoves)
-                }
-            )
-
-            Spacer(modifier = Modifier.size(4.dp))
-
-            ModuleButton(
-                titleButton = GameScoreButtonState.ButtonSortByTimer.titleButton,
-                onClick = {
-                    viewModel.handlerButtons(GameScoreButtonState.ButtonSortByTimer)
-                }
-            )
-
-            Spacer(modifier = Modifier.size(4.dp))
-
-            ModuleButton(
-                titleButton = GameScoreButtonState.ButtonDeleteEverything.titleButton,
-                onClick = {
-                    viewModel.handlerButtons(GameScoreButtonState.ButtonDeleteEverything)
-                }
-            )
-
+            }
         }
     }
 
@@ -120,20 +76,21 @@ fun GameScoreButtons(
 
 @Composable
 private fun ModuleButton(
-    titleButton: Int,
-    onClick: (titleButton: Int) -> Unit
+    stateButton: GameScoreButtonState,
+    onClick: (stateButton: GameScoreButtonState) -> Unit
 ) {
 
     Button(
-        onClick = { onClick(titleButton) },
+        onClick = { onClick(stateButton) },
         modifier = Modifier
-            .width(300.dp)
+            .padding(4.dp)
+            .width(250.dp)
             .height(50.dp),
         shape = Shapes.medium
     ) {
 
         Text(
-            text = stringResource(titleButton),
+            text = stringResource(stateButton.titleButton),
             fontSize = 11.sp,
             fontWeight = FontWeight.W900
         )

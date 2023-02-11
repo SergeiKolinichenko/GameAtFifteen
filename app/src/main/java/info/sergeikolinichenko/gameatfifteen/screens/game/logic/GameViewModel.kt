@@ -14,7 +14,7 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButton
 import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetScoreGameUseCase
-import info.sergeikolinichenko.gameatfifteen.utils.TimeUtils.intToTimeString
+import info.sergeikolinichenko.gameatfifteen.utils.ConvertUtils.intToTimeString
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import javax.inject.Inject

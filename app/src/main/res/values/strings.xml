@@ -23,5 +23,6 @@
     <string name="button_sort_by_time">SORT BY TIME</string>
     <string name="button_sort_by_date">SORT BY DATE</string>
     <string name="button_delete_all_scores_item">DELETE EVERYTHING</string>
+    <string name="open_score_menu">Open menu</string>
 
 </resources>

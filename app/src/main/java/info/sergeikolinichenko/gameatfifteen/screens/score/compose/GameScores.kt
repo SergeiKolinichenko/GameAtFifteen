@@ -1,18 +1,24 @@
 package info.sergeikolinichenko.gameatfifteen.screens.score.compose
 
 import android.content.res.Configuration
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 
@@ -26,11 +32,34 @@ fun GameScore(
 
     val orientation by viewModel.orientationScreen.observeAsState()
 
+    val animationState by viewModel.animationState.observeAsState(false)
+    val transition = updateTransition(targetState = animationState, label = "")
+
+    val size by transition.animateInt(
+        transitionSpec = {
+            tween(
+                durationMillis = 500,
+                easing = FastOutLinearInEasing
+            )
+        }, label = ""
+    ) {
+        if (it) 0 else 36
+    }
+
+    val alpha by transition.animateFloat(transitionSpec = {
+        tween(
+            durationMillis = 300,
+            easing = FastOutLinearInEasing
+        )
+    }, label = "") {
+        if (it) 0f else 1f
+    }
+
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .fillMaxSize()
+                .padding(horizontal = 8.dp)
         ) {
             // Title
             ScoreScreenTitle(modifier = Modifier.padding(4.dp))
@@ -40,9 +69,6 @@ fun GameScore(
             // List of score card
             PortraitTable(
                 modifier = Modifier
-                    .combinedClickable(
-                        onClick = { viewModel.hideButtons() },
-                        onLongClick = { viewModel.showButtons() })
                     .weight(1f),
                 viewModel = viewModel
             )
@@ -81,8 +107,29 @@ fun GameScore(
                 viewModel = viewModel
             )
         }
+
         GameScoreButtons(viewModel = viewModel)
+
     }
+
+    //---------------------------------------------
+    Box(
+        modifier = Modifier
+            .background(color = colorResource(id = android.R.color.transparent))
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+
+        Image(
+            modifier = Modifier
+                .size(size.dp)
+                .alpha(alpha)
+                .clickable { viewModel.showButtons() },
+            painter = painterResource(id = R.drawable.arrow_top_left_thick),
+            contentDescription = stringResource(R.string.open_score_menu)
+        )
+    }
+    //-------------------------------------
 }
 
 @Composable

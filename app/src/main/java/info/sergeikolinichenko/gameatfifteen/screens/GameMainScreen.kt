@@ -2,7 +2,6 @@ package info.sergeikolinichenko.gameatfifteen.screens
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
-import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.navigation.AppNavGraph
 import info.sergeikolinichenko.gameatfifteen.navigation.Screen
 import info.sergeikolinichenko.gameatfifteen.screens.game.compose.GameScreen
@@ -26,12 +25,7 @@ fun GameMainScreen(
             GameScreen(
             viewModel = gameViewModel,
             clickButtonStatistics = {
-                navHostController.navigate(Screen.Scores.route){
-                    anim {
-                        enter = R.anim.enter_from_right
-                        exit = R.anim.exit_to_left
-                    }
-                }
+                navHostController.navigate(Screen.Scores.route)
             }
         ) },
         scoresScreenContent = {
