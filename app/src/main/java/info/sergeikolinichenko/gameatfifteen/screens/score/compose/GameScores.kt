@@ -3,13 +3,13 @@ package info.sergeikolinichenko.gameatfifteen.screens.score.compose
 import android.content.res.Configuration
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -24,6 +24,10 @@ import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 
 /** Created by Sergei Kolinichenko on 10.01.2023 at 18:55 (GMT+3) **/
 
+private const val MAIN_HEIGHT = -270
+private const val HALF_HEIGHT = -135
+private const val ZERO = 0
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GameScore(
@@ -32,28 +36,8 @@ fun GameScore(
 
     val orientation by viewModel.orientationScreen.observeAsState()
 
-    val animationState by viewModel.animationState.observeAsState(false)
-    val transition = updateTransition(targetState = animationState, label = "")
-
-    val size by transition.animateInt(
-        transitionSpec = {
-            tween(
-                durationMillis = 500,
-                easing = FastOutLinearInEasing
-            )
-        }, label = ""
-    ) {
-        if (it) 0 else 36
-    }
-
-    val alpha by transition.animateFloat(transitionSpec = {
-        tween(
-            durationMillis = 300,
-            easing = FastOutLinearInEasing
-        )
-    }, label = "") {
-        if (it) 0f else 1f
-    }
+    var direction = true
+    val offsetY by viewModel.animationState.observeAsState(ZERO.toFloat())
 
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
         Column(
@@ -76,7 +60,10 @@ fun GameScore(
 
         }
 
-        GameScoreButtons(viewModel = viewModel)
+        GameScoreButtons(
+            viewModel = viewModel,
+            offsetY = offsetY
+        )
 
     } else {
 
@@ -101,14 +88,17 @@ fun GameScore(
                 modifier = Modifier
                     .combinedClickable(
                         onClick = { viewModel.hideButtons() },
-                        onLongClick = { viewModel.showButtons() })
+                        onLongClick = { })
                     .weight(1f)
                     .fillMaxWidth(),
                 viewModel = viewModel
             )
         }
 
-        GameScoreButtons(viewModel = viewModel)
+        GameScoreButtons(
+            viewModel = viewModel,
+            offsetY = offsetY
+        )
 
     }
 
@@ -122,10 +112,40 @@ fun GameScore(
 
         Image(
             modifier = Modifier
-                .size(size.dp)
-                .alpha(alpha)
-                .clickable { viewModel.showButtons() },
-            painter = painterResource(id = R.drawable.arrow_top_left_thick),
+                .size(36.dp)
+                .offset(y = offsetY.dp)
+                .align(Alignment.BottomCenter)
+                .pointerInput(Unit) {
+                    var positionY = offsetY
+                    detectDragGestures { change, dragAmount ->
+
+                        if (direction) {
+                            if (positionY <= ZERO && positionY > HALF_HEIGHT) {
+                                positionY += dragAmount.y
+                            } else if (positionY <= HALF_HEIGHT) {
+                                positionY = MAIN_HEIGHT.toFloat()
+                                direction = false
+                            } else positionY = ZERO.toFloat()
+
+                        } else {
+                            if (positionY >= MAIN_HEIGHT && positionY < HALF_HEIGHT) {
+                                positionY += dragAmount.y
+                            } else if (positionY >= HALF_HEIGHT) {
+                                positionY = ZERO.toFloat()
+                                direction = true
+                            } else positionY = MAIN_HEIGHT.toFloat()
+                        }
+                        viewModel.setAnimationState(positionY)
+                        if (offsetY < MAIN_HEIGHT)
+                            viewModel.setAnimationState(MAIN_HEIGHT.toFloat())
+                        if (offsetY > ZERO)
+                            viewModel.setAnimationState(ZERO.toFloat())
+                    }
+                },
+            painter = painterResource(
+                id = if (offsetY < HALF_HEIGHT) R.drawable.chevron_down_arrow
+                else R.drawable.chevron_up_arrow
+            ),
             contentDescription = stringResource(R.string.open_score_menu)
         )
     }

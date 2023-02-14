@@ -26,8 +26,8 @@ class ScoreViewModel @Inject constructor(
     private var _orientationScreen = MutableLiveData<Int>()
     val orientationScreen: LiveData<Int> = _orientationScreen
 
-    private var _animationState = MutableLiveData(false)
-    val animationState: LiveData<Boolean> = _animationState
+    private var _animationState = MutableLiveData(0f)
+    val animationState: LiveData<Float> = _animationState
 
     private var sortBy = when (getListScoresSortUseCase.invoke()) {
         SORT_BY_TIME_TIMER -> SORT_BY_TIME_TIMER
@@ -92,12 +92,12 @@ class ScoreViewModel @Inject constructor(
         deleteAllScoresGame.invoke()
     }
 
-    fun showButtons() {
-        _animationState.value = true
+    fun setAnimationState(state: Float) {
+        _animationState.value = state
     }
 
     fun hideButtons() {
-        _animationState.value = false
+        _animationState.value = 0f
     }
 
     companion object {

@@ -7,7 +7,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,26 +20,26 @@ import info.sergeikolinichenko.gameatfifteen.ui.theme.Shapes
 
 /** Created by Sergei Kolinichenko on 25.01.2023 at 19:57 (GMT+3) **/
 
+private const val MAIN_HEIGHT = 280
+private const val HALF_HEIGHT = 140
+private const val ZERO = 0
+
 @Composable
 fun GameScoreButtons(
-    viewModel: ScoreViewModel
+    viewModel: ScoreViewModel,
+    offsetY: Float
 ) {
 
-    val animationState by viewModel.animationState.observeAsState(false)
-    val transition = updateTransition(targetState = animationState, label = "")
-
-    val xOffset by transition.animateInt(
-        transitionSpec = { tween(durationMillis = 500) },
-        label = ""
-    ) {
-        if (it) 0 else 310
-    }
+    val transition = updateTransition(targetState = offsetY, label = "")
 
     val yOffset by transition.animateInt(
         transitionSpec = { tween(durationMillis = 500) },
         label = ""
     ) {
-        if (it) 0 else 220
+
+        if (it == ZERO.toFloat()) MAIN_HEIGHT
+        else if (it > - HALF_HEIGHT) MAIN_HEIGHT + it.toInt()
+        else ZERO
     }
 
     Box(
@@ -51,10 +50,10 @@ fun GameScoreButtons(
                     stiffness = Spring.StiffnessMedium
                 )
             )
-            .offset(xOffset.dp, yOffset.dp)
+            .offset(y = yOffset.dp)
             .padding(10.dp)
             .fillMaxSize(),
-        contentAlignment = Alignment.BottomEnd
+        contentAlignment = Alignment.BottomCenter
     ) {
 
         Column(
@@ -84,8 +83,8 @@ private fun ModuleButton(
         onClick = { onClick(stateButton) },
         modifier = Modifier
             .padding(4.dp)
-            .width(250.dp)
-            .height(50.dp),
+            .width(300.dp)
+            .height(60.dp),
         shape = Shapes.medium
     ) {
 
