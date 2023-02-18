@@ -5,10 +5,12 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -70,7 +72,11 @@ fun GameScore(
         Column(modifier = Modifier.fillMaxSize()) {
 
             // Title
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colors.background)
+                    .fillMaxWidth()
+            ) {
                 ScoreScreenTitle(
                     modifier = Modifier
                         .weight(1f)
@@ -117,7 +123,7 @@ fun GameScore(
                 .align(Alignment.BottomCenter)
                 .pointerInput(Unit) {
                     var positionY = offsetY
-                    detectDragGestures { change, dragAmount ->
+                    detectDragGestures { _, dragAmount ->
 
                         if (direction) {
                             if (positionY <= ZERO && positionY > HALF_HEIGHT) {
@@ -146,7 +152,8 @@ fun GameScore(
                 id = if (offsetY < HALF_HEIGHT) R.drawable.chevron_down_arrow
                 else R.drawable.chevron_up_arrow
             ),
-            contentDescription = stringResource(R.string.open_score_menu)
+            contentDescription = stringResource(R.string.open_score_menu),
+            colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
         )
     }
     //-------------------------------------

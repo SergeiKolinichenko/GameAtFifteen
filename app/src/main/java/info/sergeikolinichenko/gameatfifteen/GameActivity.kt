@@ -3,14 +3,19 @@ package info.sergeikolinichenko.gameatfifteen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import info.sergeikolinichenko.gameatfifteen.screens.GameMainScreen
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import info.sergeikolinichenko.gameatfifteen.navigation.AppNavGraph
+import info.sergeikolinichenko.gameatfifteen.navigation.Screen
 import info.sergeikolinichenko.gameatfifteen.screens.ViewModelsFactory
+import info.sergeikolinichenko.gameatfifteen.screens.game.compose.GameScreen
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
+import info.sergeikolinichenko.gameatfifteen.screens.score.compose.GameScore
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
 import javax.inject.Inject
@@ -30,29 +35,50 @@ class GameActivity : ComponentActivity() {
         (application as GameApp).component
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
         super.onCreate(savedInstanceState)
+
+        gameViewModel.getOrientationScreen(resources.configuration.orientation)
+        scoreViewModel.getOrientationScreen(resources.configuration.orientation)
+
+        gameViewModel.cancelApp.observe(this) { cancelApp() }
+
         setContent {
 
-            gameViewModel.cancelApp.observe(this) {
-                cancelApp()
-            }
-
-            gameViewModel.getOrientationScreen(resources.configuration.orientation)
-            scoreViewModel.getOrientationScreen(resources.configuration.orientation)
+            /*
+            Crutch for Xiaomi X3, without it,
+            when you rotate the screen to Portrait orientation,
+             there was a blank screen.
+              Couldn't think of anything better...
+             */
+            Text(text = " ")
 
             GameAtFifteenTheme {
-                // A surface container using the 'background' color from the theme
 
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier
+                        .background(color = MaterialTheme.colors.background)
+                        .fillMaxSize(),
                 ) {
 
-                    GameMainScreen(
-                        gameViewModel = gameViewModel,
-                        scoreViewModel = scoreViewModel
+                    val navHostController = rememberAnimatedNavController()
+
+                    AppNavGraph(
+                        navHostController = navHostController,
+                        gameScreenContent = {
+
+                            GameScreen(
+                                viewModel = gameViewModel,
+                                clickButtonStatistics = {
+                                    navHostController.navigate(Screen.Scores.route)
+                                }
+                            )
+                        },
+                        scoresScreenContent = {
+                            GameScore(viewModel = scoreViewModel)
+                        }
                     )
                 }
             }

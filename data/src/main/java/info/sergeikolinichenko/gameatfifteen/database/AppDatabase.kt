@@ -11,7 +11,7 @@ import info.sergeikolinichenko.gameatfifteen.models.ScoreGameDbModel
 @Database(
     entities = [ScoreGameDbModel::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
