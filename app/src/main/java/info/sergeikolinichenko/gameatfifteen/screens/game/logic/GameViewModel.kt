@@ -15,10 +15,12 @@ import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetScoreGameUseCase
 import info.sergeikolinichenko.gameatfifteen.utils.ConvertUtils.intToTimeString
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import javax.inject.Inject
-import kotlin.random.Random
 
 /** Created by Sergei Kolinichenko on 11.01.2023 at 21:37 (GMT+3) **/
 
@@ -59,22 +61,22 @@ class GameViewModel @Inject constructor(
         initGameScreen()
     }
 
-    private fun initDb() {
-        var score: ScoreGame
-        CoroutineScope(Dispatchers.Default).launch {
-            for (i in 0..500) {
-                score = ScoreGame(
-                    timeStamp = System.currentTimeMillis(),
-                    doneMoves = Random.nextInt(100, 500),
-                    timeUsed = Random.nextInt(120, 86400)
-                )
-                delay(1000)
-                score.let {
-                    setScoreGame.invoke(scoreGame = score)
-                }
-            }
-        }
-    }
+//    private fun initDb() {
+//        var score: ScoreGame
+//        CoroutineScope(Dispatchers.Default).launch {
+//            for (i in 0..500) {
+//                score = ScoreGame(
+//                    timeStamp = System.currentTimeMillis(),
+//                    doneMoves = Random.nextInt(100, 500),
+//                    timeUsed = Random.nextInt(120, 86400)
+//                )
+//                delay(1000)
+//                score.let {
+//                    setScoreGame.invoke(scoreGame = score)
+//                }
+//            }
+//        }
+//    }
 
     private fun initGameScreen() {
         if (testEnableGameBord()) {
@@ -127,6 +129,7 @@ class GameViewModel @Inject constructor(
     }
 
     private fun cancelApp() {
+        gameOver()
         _cancelApp.value = Unit
     }
 
@@ -164,7 +167,7 @@ class GameViewModel @Inject constructor(
                             stepTime = System.currentTimeMillis()
 
                             makeMove(x, y)
-                            delay(150)
+                            delay(NUMBER_MOVES_TIME_GAPE)
 
                         }
 
@@ -184,7 +187,7 @@ class GameViewModel @Inject constructor(
 
     private fun longStep(step: Long): Boolean {
         val timeGape = (System.currentTimeMillis()) - step
-        return timeGape > NUMBER_MOVES_TIME_GAPE
+        return timeGape > TIME_GAPE_BEFORE_RES
     }
 
     private fun makeMove(x: Int, y: Int) {
@@ -404,8 +407,9 @@ class GameViewModel @Inject constructor(
     companion object {
         private const val RESET_STRING_TO_EMPTY = ""
         private const val RESET_INT_COUNTER_TO_ZERO = 0
-        private const val NUMBER_OF_MOVES = 50
-        private const val NUMBER_MOVES_TIME_GAPE = 300
+        private const val NUMBER_OF_MOVES = 100
+        private const val TIME_GAPE_BEFORE_RES = 300
+        private const val NUMBER_MOVES_TIME_GAPE = 100L
 
         private val EMPTY_STRING_ARRAY_ARRAY = arrayOf(
             arrayOf("", "", "", ""),
