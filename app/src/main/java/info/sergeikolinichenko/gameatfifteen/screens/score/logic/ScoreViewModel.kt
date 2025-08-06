@@ -38,18 +38,13 @@ class ScoreViewModel @Inject constructor(
     private fun sortScoreList(
         mList: MutableLiveData<List<ScoreGame>>
     ): LiveData<List<ScoreGame>> {
-
-
-        val result: LiveData<List<ScoreGame>> =
-            Transformations.map(mList) { list ->
+            return mList.map { list ->
                 when (sortBy) {
                     SORT_BY_TIME_MOVES -> list.sortedBy { it.doneMoves }
                     SORT_BY_TIME_TIMER -> list.sortedBy { it.timeUsed }
                     else -> list.sortedBy { it.timeStamp }
                 }
             }
-
-        return result
     }
 
     fun handlerButtons(state: GameScoreButtonState) {

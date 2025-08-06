@@ -1,14 +1,14 @@
 package info.sergeikolinichenko.gameatfifteen.repository
 
 import android.content.SharedPreferences
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import info.sergeikolinichenko.gameatfifteen.database.GameDao
 import info.sergeikolinichenko.gameatfifteen.models.MapperGameModels
 import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGamePrefModel
 import javax.inject.Inject
+import androidx.core.content.edit
 
 /** Created by Sergei Kolinichenko on 18.01.2023 at 21:21 (GMT+3) **/
 
@@ -43,7 +43,7 @@ class GameRepositoryImpl @Inject constructor(
     }
 
     override fun setListScoresSort(sort: String) {
-        sharedPreferences.edit().putString(GAME_LIST_SCORE_SORT, sort).apply()
+        sharedPreferences.edit { putString(GAME_LIST_SCORE_SORT, sort) }
     }
 
     override fun getListScoresSort(): String {
@@ -64,11 +64,9 @@ class GameRepositoryImpl @Inject constructor(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getListScoreGame(): T {
-        val list: LiveData<List<ScoreGame>> =
-            Transformations.map(dao.getListScores()) {
-                mapper.mapListDbModelToListEntity(it)
-            }
-        return list as T
+        return dao.getListScores().map {
+            mapper.mapListDbModelToListEntity(it)
+        } as T
     }
 
     companion object {

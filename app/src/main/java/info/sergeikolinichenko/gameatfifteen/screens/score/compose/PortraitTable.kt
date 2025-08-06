@@ -40,7 +40,8 @@ fun PortraitTable(
             }
 
             SwipeToDismiss(
-                modifier = Modifier.animateItemPlacement(),
+//                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 state = dismissState,
                 directions = setOf(DismissDirection.StartToEnd),
                 background = {
