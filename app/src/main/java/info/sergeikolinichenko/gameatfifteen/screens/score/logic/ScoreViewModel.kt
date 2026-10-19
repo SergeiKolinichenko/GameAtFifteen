@@ -14,7 +14,8 @@ class ScoreViewModel @Inject constructor(
     getListScoresSortUseCase: GetListScoresSortUseCase,
     private val deleteScoreGame: DeleteScoreGameUseCase,
     private val deleteAllScoresGame: DeleteAllScoresGameUseCase,
-    private val setListScoresSortUseCase: SetListScoresSortUseCase
+    private val setListScoresSortUseCase: SetListScoresSortUseCase,
+    private val setScoreGame: SetScoreGameUseCase
 ) : ViewModel() {
 
     private var _listScoreGame: MutableLiveData<List<ScoreGame>> =
@@ -38,7 +39,9 @@ class ScoreViewModel @Inject constructor(
     private fun sortScoreList(
         mList: MutableLiveData<List<ScoreGame>>
     ): LiveData<List<ScoreGame>> {
-            return mList.map { list ->
+            return mList.map { allScores ->
+                // Earlier versions could save a fake win without playing (0 seconds)
+                val list = allScores.filter { it.timeUsed > 0 }
                 when (sortBy) {
                     SORT_BY_TIME_MOVES -> list.sortedBy { it.doneMoves }
                     SORT_BY_TIME_TIMER -> list.sortedBy { it.timeUsed }
@@ -80,6 +83,12 @@ class ScoreViewModel @Inject constructor(
     fun deleteScoreGame(item: ScoreGame) {
         viewModelScope.launch {
             deleteScoreGame.invoke(scoreGame = item)
+        }
+    }
+
+    fun restoreScoreGame(item: ScoreGame) {
+        viewModelScope.launch {
+            setScoreGame.invoke(scoreGame = item)
         }
     }
 

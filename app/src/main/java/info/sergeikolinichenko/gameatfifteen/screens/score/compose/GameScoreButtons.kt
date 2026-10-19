@@ -3,16 +3,22 @@ package info.sergeikolinichenko.gameatfifteen.screens.score.compose
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.score.state.GameScoreButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.score.state.GameScoreButtonState.Companion.listGameScoreButtonState
@@ -29,6 +35,8 @@ fun GameScoreButtons(
     viewModel: ScoreViewModel,
     offsetY: Float
 ) {
+
+    var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
 
     val transition = updateTransition(targetState = offsetY, label = "")
 
@@ -63,14 +71,40 @@ fun GameScoreButtons(
             for (item in listGameScoreButtonState) {
 
                 ModuleButton(stateButton = item, onClick = {
-                    viewModel.handlerButtons(state = it)
+                    if (it is GameScoreButtonState.ButtonDeleteEverything) {
+                        showDeleteAllDialog = true
+                    } else {
+                        viewModel.handlerButtons(state = it)
+                    }
                 })
 
             }
         }
     }
 
-
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text(text = stringResource(R.string.delete_all_dialog_title)) },
+            text = { Text(text = stringResource(R.string.delete_all_dialog_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteAllDialog = false
+                    viewModel.handlerButtons(state = GameScoreButtonState.ButtonDeleteEverything)
+                }) {
+                    Text(text = stringResource(R.string.delete_all_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteAllDialog = false
+                    viewModel.hideButtons()
+                }) {
+                    Text(text = stringResource(R.string.delete_all_dialog_dismiss))
+                }
+            }
+        )
+    }
 }
 
 @Composable

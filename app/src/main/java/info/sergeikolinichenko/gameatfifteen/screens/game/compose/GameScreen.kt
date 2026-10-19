@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
 
 /** Created by Sergei Kolinichenko on 24.01.2023 at 20:19 (GMT+3) **/
 
@@ -15,8 +14,7 @@ fun GameScreen(
     clickButtonStatistics: () -> Unit
 ) {
 
-    val showWinDialog by
-    viewModel.showWinDialog.observeAsState(WinDialogButtonState.WinDialogInitial)
+    val winResult by viewModel.winResult.observeAsState()
 
     val orientation by viewModel.orientationScreen.observeAsState()
 
@@ -37,5 +35,5 @@ fun GameScreen(
         )
     }
 
-    WinDialog(showWinDialog, viewModel)
+    WinDialog(winResult, viewModel)
 }

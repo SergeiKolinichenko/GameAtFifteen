@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Пятнашка</string>
-    <string name="win_dialog_message">Вы можете достигнуть лучшего результата!\nНачать новую игру?</string>
     <string name="win_dialog_congratulations">Поздравляем!\nВы победили!</string>
     <string name="button_statistics">Статистика</string>
-    <string name="button_game_over">Новая\nигра</string>
+    <string name="button_game_over">Сдаться</string>
     <string name="button_start_game">Начать\nигру</string>
     <string name="text_time_elapsed">Таймер:</string>
     <string name="text_move_number">Ходы:</string>
-    <string name="win_dialog_title_button_cancel">Выход</string>
-    <string name="win_dialog_title_button_start">Старт</string>
+    <string name="win_dialog_title_button_cancel">Закрыть</string>
+    <string name="win_dialog_title_button_start">Ещё раз</string>
     <string name="game_date_title">Дата</string>
     <string name="game_time_title">Время</string>
     <string name="game_moves_title">Ходов</string>
@@ -20,4 +19,15 @@
     <string name="button_delete_all_scores_item">УДАЛИТЬ ВСЁ</string>
     <string name="button_sort_by_date">СОРТИРОВАТЬ ПО ДАТЕ</string>
     <string name="open_score_menu">Открыть меню</string>
+    <string name="win_dialog_result">Ходов: %1$d\nВремя: %2$s</string>
+    <string name="give_up_dialog_title">Сдаться?</string>
+    <string name="give_up_dialog_message">Эта партия не попадёт в статистику.</string>
+    <string name="give_up_dialog_confirm">Сдаться</string>
+    <string name="give_up_dialog_dismiss">Продолжить</string>
+    <string name="delete_all_dialog_title">Удалить всю статистику?</string>
+    <string name="delete_all_dialog_message">Это действие нельзя отменить.</string>
+    <string name="delete_all_dialog_confirm">Удалить</string>
+    <string name="delete_all_dialog_dismiss">Отмена</string>
+    <string name="snackbar_score_deleted">Результат удалён</string>
+    <string name="snackbar_undo">Отменить</string>
 </resources>

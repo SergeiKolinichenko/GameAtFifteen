@@ -26,6 +26,7 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 fun GameBoard (viewModel: GameViewModel) {
 
     val plateState by viewModel.gameBoard.observeAsState()
+    val isPlaying by viewModel.isPlaying.observeAsState(false)
 
     Column(
         modifier = Modifier
@@ -39,11 +40,14 @@ fun GameBoard (viewModel: GameViewModel) {
 
             Row(modifier = Modifier.weight(1f)) {
 
-                arrayOfGameBoardStates.forEach { GameBoardState ->
+                arrayOfGameBoardStates.forEach { plate ->
 
                     Box(modifier = Modifier.weight(1f)) {
 
-                        GameButton(state = GameBoardState) {
+                        GameButton(
+                            state = plate,
+                            enabled = isPlaying && plate != GameBoardState.NoPlate
+                        ) {
                             viewModel.onClickGameButton(it)
                         }
                     }
@@ -59,6 +63,7 @@ fun GameBoard (viewModel: GameViewModel) {
 @Composable
 private fun GameButton(
     state: GameBoardState,
+    enabled: Boolean,
     onClickListener: (number: String) -> Unit
 ) {
 
@@ -66,7 +71,7 @@ private fun GameButton(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 2.dp, top = 2.dp)
-            .clickable { onClickListener(state.number) },
+            .clickable(enabled = enabled) { onClickListener(state.number) },
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(
             1.dp,

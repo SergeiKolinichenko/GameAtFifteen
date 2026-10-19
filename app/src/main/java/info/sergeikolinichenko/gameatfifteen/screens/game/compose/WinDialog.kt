@@ -18,29 +18,24 @@ import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinResult
 import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 23.01.2023 at 20:28 (GMT+3) **/
 
 @Composable
 fun WinDialog(
-    state: WinDialogButtonState,
+    result: WinResult?,
     viewModel: GameViewModel
 ) {
 
-    val enable = when(state) {
-        WinDialogButtonState.WinDialogInitial -> false
-        WinDialogButtonState.WinDialogButtonStart -> true
-        WinDialogButtonState.WinDialogButtonCancel -> true
-    }
-
-    if (enable) {
+    if (result != null) {
 
         AlertDialog(
             modifier = Modifier
                 .padding(horizontal = 8.dp),
             onDismissRequest = {
-
+                viewModel.onDismissWinDialog()
             },
             title = {
                 Text(
@@ -54,7 +49,11 @@ fun WinDialog(
             text = {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.win_dialog_message),
+                    text = stringResource(
+                        R.string.win_dialog_result,
+                        result.moves,
+                        result.time
+                    ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center

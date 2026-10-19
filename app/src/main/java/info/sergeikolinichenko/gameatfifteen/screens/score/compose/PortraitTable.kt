@@ -7,10 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 import info.sergeikolinichenko.gameatfifteen.utils.ConvertStoreGameToString.convertToString
 
@@ -20,7 +22,8 @@ import info.sergeikolinichenko.gameatfifteen.utils.ConvertStoreGameToString.conv
 @Composable
 fun PortraitTable(
     modifier: Modifier = Modifier,
-    viewModel: ScoreViewModel
+    viewModel: ScoreViewModel,
+    onDelete: (ScoreGame) -> Unit
 ) {
 
     val scores = viewModel.listScoreGame.observeAsState(listOf())
@@ -36,7 +39,8 @@ fun PortraitTable(
             val dismissState = rememberDismissState()
 
             if (dismissState.isDismissed(DismissDirection.StartToEnd)) {
-                viewModel.deleteScoreGame(it)
+                // Once per swipe, not on every recomposition
+                LaunchedEffect(it.timeStamp) { onDelete(it) }
             }
 
             SwipeToDismiss(

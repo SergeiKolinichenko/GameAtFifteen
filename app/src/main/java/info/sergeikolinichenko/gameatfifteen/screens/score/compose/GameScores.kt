@@ -6,6 +6,9 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -23,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
+import kotlinx.coroutines.launch
 
 /** Created by Sergei Kolinichenko on 10.01.2023 at 18:55 (GMT+3) **/
 
@@ -41,6 +45,11 @@ fun GameScore(
     var direction = true
     val offsetY by viewModel.animationState.observeAsState(ZERO.toFloat())
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val textDeleted = stringResource(R.string.snackbar_score_deleted)
+    val textUndo = stringResource(R.string.snackbar_undo)
+
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
         Column(
             modifier = Modifier
@@ -56,7 +65,20 @@ fun GameScore(
             PortraitTable(
                 modifier = Modifier
                     .weight(1f),
-                viewModel = viewModel
+                viewModel = viewModel,
+                onDelete = { item ->
+                    viewModel.deleteScoreGame(item)
+                    scope.launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        val result = snackbarHostState.showSnackbar(
+                            message = textDeleted,
+                            actionLabel = textUndo
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.restoreScoreGame(item)
+                        }
+                    }
+                }
             )
 
 
@@ -157,6 +179,15 @@ fun GameScore(
         )
     }
     //-------------------------------------
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 48.dp),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        SnackbarHost(hostState = snackbarHostState)
+    }
 }
 
 @Composable

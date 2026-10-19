@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Петнадесет</string>
-    <string name="win_dialog_message">Можете да постигнете най-добрия резултат!\nЗапочнете нова игра?</string>
     <string name="win_dialog_congratulations">Честито!\nТи спечели!</string>
     <string name="button_statistics">Статистика</string>
-    <string name="button_game_over">Нова\nигра</string>
+    <string name="button_game_over">Предавам\nсе</string>
     <string name="button_start_game">Започни\nиграта</string>
     <string name="text_time_elapsed">Таймер:</string>
     <string name="text_move_number">Се движи:</string>
-    <string name="win_dialog_title_button_cancel">Изход</string>
-    <string name="win_dialog_title_button_start">Започнете</string>
+    <string name="win_dialog_title_button_cancel">Затвори</string>
+    <string name="win_dialog_title_button_start">Отново</string>
     <string name="game_date_title">Дата</string>
     <string name="game_time_title">Време</string>
     <string name="game_moves_title">Стъпки</string>
@@ -20,4 +19,15 @@
     <string name="button_delete_all_scores_item">ИЗТРИЕТЕ ВСИЧКО</string>
     <string name="button_sort_by_date">СОРТИРАНЕ ПО ДАТА</string>
     <string name="open_score_menu">Отворете менюто</string>
+    <string name="win_dialog_result">Ходове: %1$d\nВреме: %2$s</string>
+    <string name="give_up_dialog_title">Предаваш ли се?</string>
+    <string name="give_up_dialog_message">Тази игра няма да бъде записана в статистиката.</string>
+    <string name="give_up_dialog_confirm">Предавам се</string>
+    <string name="give_up_dialog_dismiss">Продължи</string>
+    <string name="delete_all_dialog_title">Да се изтрие ли цялата статистика?</string>
+    <string name="delete_all_dialog_message">Това действие не може да бъде отменено.</string>
+    <string name="delete_all_dialog_confirm">Изтрий</string>
+    <string name="delete_all_dialog_dismiss">Отказ</string>
+    <string name="snackbar_score_deleted">Резултатът е изтрит</string>
+    <string name="snackbar_undo">Отмени</string>
 </resources>

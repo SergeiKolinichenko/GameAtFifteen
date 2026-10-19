@@ -2,7 +2,9 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.TextButton
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -11,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState.*
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlTextState.*
 import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
 
 /** Created by Sergei Kolinichenko on 08.01.2023 at 19:51 (GMT+3) **/
@@ -47,28 +50,15 @@ fun GameControl(
                 .fillMaxWidth()
         ) {
 
-            val textGame by viewModel.gameControlTextState.observeAsState(
-                initial = InitialText
-            )
-            val textTimeElapsed = remember { mutableStateOf("") }
-            val textMovesNumber = remember { mutableStateOf("") }
-
-            when (textGame) {
-                is TextTimeElapsed -> textTimeElapsed.value =
-                    (textGame as TextTimeElapsed).timeElapsed
-
-                is TextMovesNumber -> textMovesNumber.value =
-                    (textGame as TextMovesNumber).movesNumber
-
-                else -> {}
-            }
+            val textTimeElapsed by viewModel.timeElapsedText.observeAsState("")
+            val textMovesNumber by viewModel.movesNumberText.observeAsState("")
 
             GameTexts(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
                 title = stringResource(id = R.string.text_time_elapsed),
-                info = textTimeElapsed.value
+                info = textTimeElapsed
             )
 
             Spacer(modifier = Modifier.size(4.dp))
@@ -78,7 +68,7 @@ fun GameControl(
                     .weight(1f)
                     .fillMaxWidth(),
                 title = stringResource(id = R.string.text_move_number),
-                info = textMovesNumber.value
+                info = textMovesNumber
             )
         }
 
@@ -93,6 +83,8 @@ fun GameControl(
             val buttonGame by viewModel.gameControlButtonState.observeAsState(
                 initial = InitialButtons
             )
+
+            var showGiveUpDialog by rememberSaveable { mutableStateOf(false) }
 
             val stateButtonStatistics: Boolean
             val stateButtonGameOver: Boolean
@@ -138,9 +130,7 @@ fun GameControl(
                     titleButton = R.string.button_game_over,
                     enableButton = stateButtonGameOver,
                     onClickListener = {
-                        viewModel.getPressedGameControlButton(
-                            ButtonGameOver
-                        )
+                        showGiveUpDialog = true
                     }
                 )
 
@@ -157,8 +147,40 @@ fun GameControl(
                     }
                 )
             }
+
+            if (showGiveUpDialog) {
+                GiveUpDialog(
+                    onConfirm = {
+                        showGiveUpDialog = false
+                        viewModel.getPressedGameControlButton(ButtonGameOver)
+                    },
+                    onDismiss = { showGiveUpDialog = false }
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun GiveUpDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.give_up_dialog_title)) },
+        text = { Text(text = stringResource(R.string.give_up_dialog_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(R.string.give_up_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.give_up_dialog_dismiss))
+            }
+        }
+    )
 }
 
 @Composable

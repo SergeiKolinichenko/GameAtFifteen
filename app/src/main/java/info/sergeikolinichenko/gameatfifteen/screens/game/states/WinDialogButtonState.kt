@@ -8,10 +8,6 @@ sealed class WinDialogButtonState(
     val titleButton: Int
 ) {
 
-    object WinDialogInitial: WinDialogButtonState(
-        titleButton = INITIAL_WIN_DIALOG_BUTTONS
-    )
-
     object WinDialogButtonCancel: WinDialogButtonState(
         titleButton = R.string.win_dialog_title_button_cancel
     )
@@ -19,9 +15,5 @@ sealed class WinDialogButtonState(
     object WinDialogButtonStart: WinDialogButtonState(
         titleButton = R.string.win_dialog_title_button_start
     )
-
-    companion object{
-        const val INITIAL_WIN_DIALOG_BUTTONS = -1
-    }
 
 }

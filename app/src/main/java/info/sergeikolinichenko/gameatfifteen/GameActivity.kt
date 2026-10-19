@@ -3,6 +3,9 @@ package info.sergeikolinichenko.gameatfifteen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,12 +41,11 @@ class GameActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         gameViewModel.getOrientationScreen(resources.configuration.orientation)
         scoreViewModel.getOrientationScreen(resources.configuration.orientation)
-
-        gameViewModel.cancelApp.observe(this) { cancelApp() }
 
         setContent {
 
@@ -65,32 +67,38 @@ class GameActivity : ComponentActivity() {
 
                     val navHostController = rememberAnimatedNavController()
 
-                    AppNavGraph(
-                        navHostController = navHostController,
-                        gameScreenContent = {
+                    // Edge-to-edge: background goes under the system bars,
+                    // content stays clear of them
+                    Box(modifier = Modifier.safeDrawingPadding()) {
+                        AppNavGraph(
+                            navHostController = navHostController,
+                            gameScreenContent = {
 
-                            GameScreen(
-                                viewModel = gameViewModel,
-                                clickButtonStatistics = {
-                                    navHostController.navigate(Screen.Scores.route)
-                                }
-                            )
-                        },
-                        scoresScreenContent = {
-                            GameScore(viewModel = scoreViewModel)
-                        }
-                    )
+                                GameScreen(
+                                    viewModel = gameViewModel,
+                                    clickButtonStatistics = {
+                                        navHostController.navigate(Screen.Scores.route)
+                                    }
+                                )
+                            },
+                            scoresScreenContent = {
+                                GameScore(viewModel = scoreViewModel)
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 
-    override fun onStop() {
-        gameViewModel.saveGame()
-        super.onStop()
+    override fun onStart() {
+        super.onStart()
+        gameViewModel.resumeGame()
     }
 
-    private fun cancelApp() {
-        finish()
+    override fun onStop() {
+        gameViewModel.saveGame()
+        gameViewModel.pauseGame()
+        super.onStop()
     }
 }

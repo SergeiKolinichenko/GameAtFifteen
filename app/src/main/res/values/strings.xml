@@ -3,17 +3,16 @@
 
     <!--  Title for the buttons in the GameControl  -->
     <string name="button_statistics">Statistics</string>
-    <string name="button_game_over">Game\nOver</string>
+    <string name="button_game_over">Give\nUp</string>
     <string name="button_start_game">Start\nGame</string>
 
     <!-- Text for the Texts in the GameControl  -->
 <!--    <string name="text_time_elapsed">Game time:  %1$s</string>-->
     <string name="text_time_elapsed">Timer:</string>
     <string name="text_move_number">Moves:</string>
-    <string name="win_dialog_title_button_cancel">Cancel</string>
-    <string name="win_dialog_title_button_start">Start</string>
+    <string name="win_dialog_title_button_cancel">Close</string>
+    <string name="win_dialog_title_button_start">Play again</string>
     <string name="win_dialog_congratulations">Congratulations!\nYou have won!</string>
-    <string name="win_dialog_message">You can achieve the best result!\nStart a new game?</string>
     <string name="game_date_title">Date</string>
     <string name="game_time_title">Time</string>
     <string name="game_moves_title">Moves</string>
@@ -25,4 +24,15 @@
     <string name="button_delete_all_scores_item">DELETE EVERYTHING</string>
     <string name="open_score_menu">Open menu</string>
 
+    <string name="win_dialog_result">Moves: %1$d\nTime: %2$s</string>
+    <string name="give_up_dialog_title">Give up?</string>
+    <string name="give_up_dialog_message">This game will not be saved to the statistics.</string>
+    <string name="give_up_dialog_confirm">Give up</string>
+    <string name="give_up_dialog_dismiss">Keep playing</string>
+    <string name="delete_all_dialog_title">Delete all statistics?</string>
+    <string name="delete_all_dialog_message">This cannot be undone.</string>
+    <string name="delete_all_dialog_confirm">Delete</string>
+    <string name="delete_all_dialog_dismiss">Cancel</string>
+    <string name="snackbar_score_deleted">Result deleted</string>
+    <string name="snackbar_undo">Undo</string>
 </resources>
