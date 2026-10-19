@@ -1,8 +1,14 @@
 package info.sergeikolinichenko.gameatfifteen.screens.score.logic
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
-import info.sergeikolinichenko.gameatfifteen.screens.score.state.GameScoreButtonState
+import info.sergeikolinichenko.gameatfifteen.screens.score.state.ScoreSort
+import info.sergeikolinichenko.gameatfifteen.screens.score.state.ScoreSummary
 import info.sergeikolinichenko.gameatfifteen.usecases.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,67 +20,45 @@ class ScoreViewModel @Inject constructor(
     getListScoresSortUseCase: GetListScoresSortUseCase,
     private val deleteScoreGame: DeleteScoreGameUseCase,
     private val deleteAllScoresGame: DeleteAllScoresGameUseCase,
-    private val setListScoresSortUseCase: SetListScoresSortUseCase
+    private val setListScoresSortUseCase: SetListScoresSortUseCase,
+    private val setScoreGame: SetScoreGameUseCase
 ) : ViewModel() {
 
-    private var _listScoreGame: MutableLiveData<List<ScoreGame>> =
-        getListScoreGame.invoke()
-    val listScoreGame: LiveData<List<ScoreGame>> =
-        sortScoreList(_listScoreGame)
-
-
-    private var _orientationScreen = MutableLiveData<Int>()
-    val orientationScreen: LiveData<Int> = _orientationScreen
-
-    private var _animationState = MutableLiveData(0f)
-    val animationState: LiveData<Float> = _animationState
-
-    private var sortBy = when (getListScoresSortUseCase.invoke()) {
-        SORT_BY_TIME_TIMER -> SORT_BY_TIME_TIMER
-        SORT_BY_TIME_MOVES -> SORT_BY_TIME_MOVES
-        else -> SORT_BY_TIME_STAMP
-    }
-
-    private fun sortScoreList(
-        mList: MutableLiveData<List<ScoreGame>>
-    ): LiveData<List<ScoreGame>> {
-            return mList.map { list ->
-                when (sortBy) {
-                    SORT_BY_TIME_MOVES -> list.sortedBy { it.doneMoves }
-                    SORT_BY_TIME_TIMER -> list.sortedBy { it.timeUsed }
-                    else -> list.sortedBy { it.timeStamp }
-                }
-            }
-    }
-
-    fun handlerButtons(state: GameScoreButtonState) {
-        when (state) {
-            GameScoreButtonState.ButtonSortByMoves -> {
-                setListScoresSortUseCase.invoke(SORT_BY_TIME_MOVES)
-                sortBy = SORT_BY_TIME_MOVES
-                _listScoreGame.value = _listScoreGame.value
-            }
-            GameScoreButtonState.ButtonSortByTimer -> {
-                setListScoresSortUseCase.invoke(SORT_BY_TIME_TIMER)
-                sortBy = SORT_BY_TIME_TIMER
-                _listScoreGame.value = _listScoreGame.value
-            }
-            GameScoreButtonState.ButtonSortByDate -> {
-                setListScoresSortUseCase.invoke(SORT_BY_TIME_STAMP)
-                sortBy = SORT_BY_TIME_STAMP
-                _listScoreGame.value = _listScoreGame.value
-            }
-            GameScoreButtonState.ButtonDeleteEverything -> {
-                viewModelScope.launch {
-                    deleteAllScoreGame()
-                }
-            }
+    // Earlier versions could save a fake win without playing (0 seconds)
+    private val allScores: LiveData<List<ScoreGame>> =
+        getListScoreGame.invoke<LiveData<List<ScoreGame>>>().map { list ->
+            list.filter { it.timeUsed > 0 }
         }
-        hideButtons()
+
+    private val _sortBy = MutableLiveData(ScoreSort.fromKey(getListScoresSortUseCase.invoke()))
+    val sortBy: LiveData<ScoreSort> = _sortBy
+
+    val scores: LiveData<List<ScoreGame>> = MediatorLiveData<List<ScoreGame>>().apply {
+        val update = {
+            value = sortScores(allScores.value.orEmpty(), _sortBy.value ?: ScoreSort.DATE)
+        }
+        addSource(allScores) { update() }
+        addSource(_sortBy) { update() }
     }
 
-    fun getOrientationScreen(orientation: Int) {
-        _orientationScreen.value = orientation
+    val summary: LiveData<ScoreSummary> = allScores.map { list ->
+        ScoreSummary(
+            games = list.size,
+            bestMoves = list.minOfOrNull { it.doneMoves },
+            bestTime = list.minOfOrNull { it.timeUsed }
+        )
+    }
+
+    private fun sortScores(list: List<ScoreGame>, sort: ScoreSort): List<ScoreGame> =
+        when (sort) {
+            ScoreSort.DATE -> list.sortedByDescending { it.timeStamp }
+            ScoreSort.MOVES -> list.sortedWith(compareBy({ it.doneMoves }, { it.timeUsed }))
+            ScoreSort.TIME -> list.sortedWith(compareBy({ it.timeUsed }, { it.doneMoves }))
+        }
+
+    fun setSort(sort: ScoreSort) {
+        setListScoresSortUseCase.invoke(sort.key)
+        _sortBy.value = sort
     }
 
     fun deleteScoreGame(item: ScoreGame) {
@@ -83,21 +67,15 @@ class ScoreViewModel @Inject constructor(
         }
     }
 
-    private suspend fun deleteAllScoreGame() {
-        deleteAllScoresGame.invoke()
+    fun restoreScoreGame(item: ScoreGame) {
+        viewModelScope.launch {
+            setScoreGame.invoke(scoreGame = item)
+        }
     }
 
-    fun setAnimationState(state: Float) {
-        _animationState.value = state
-    }
-
-    fun hideButtons() {
-        _animationState.value = 0f
-    }
-
-    companion object {
-        private const val SORT_BY_TIME_STAMP = "SORT_BY_TIME_STAMP"
-        private const val SORT_BY_TIME_TIMER = "SORT_BY_TIME_TIMER"
-        private const val SORT_BY_TIME_MOVES = "SORT_BY_TIME_MOVES"
+    fun deleteAllScores() {
+        viewModelScope.launch {
+            deleteAllScoresGame.invoke()
+        }
     }
 }

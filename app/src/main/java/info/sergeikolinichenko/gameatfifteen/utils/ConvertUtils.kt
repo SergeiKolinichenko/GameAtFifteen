@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.utils
 
+import android.text.format.DateUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -7,18 +8,24 @@ import java.util.*
 
 object ConvertUtils {
 
-    fun Int.convertIntToFourDigit() = String.format("%04d", this)
-
+    // 0:42, 3:12, 1:05:09
     fun Int.intToTimeString(): String {
         val seconds = this % 60
         val minutes = this / 60 % 60
-        val hours = this / 60 / 60 % 24
-        return String.format( "%02d:%02d:%02d", hours, minutes, seconds )
+        val hours = this / 60 / 60
+        return if (hours > 0) String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, seconds)
+        else String.format(Locale.ROOT, "%d:%02d", minutes, seconds)
     }
 
-    fun Long.getDate(): String {
-        val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
-        return dateFormat.format(this)
+    // "Today", "Yesterday" or "19 Oct", localized by the system
+    fun Long.getDay(): String {
+        return if (DateUtils.isToday(this) || DateUtils.isToday(this + DateUtils.DAY_IN_MILLIS)) {
+            DateUtils.getRelativeTimeSpanString(
+                this, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS
+            ).toString()
+        } else {
+            SimpleDateFormat("d MMM", Locale.getDefault()).format(this)
+        }
     }
 
     fun Long.getTime(): String {
