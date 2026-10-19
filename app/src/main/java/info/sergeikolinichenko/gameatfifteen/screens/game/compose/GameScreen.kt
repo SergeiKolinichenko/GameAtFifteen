@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -113,7 +114,7 @@ fun GameScreen(
             ) {
                 TopBar(onClickStatistics = openStatistics)
                 Counters(moves = moves, time = time)
-                if (!isPlaying) Hint()
+                Hint(visible = !isPlaying)
                 Spacer(modifier = Modifier.weight(1f))
                 actionButton()
             }
@@ -138,7 +139,8 @@ fun GameScreen(
                     .weight(1f)
                     .fillMaxWidth()
             )
-            if (!isPlaying) Hint()
+            // The hint keeps its space while playing, so the board does not jump
+            Hint(visible = !isPlaying)
             actionButton()
         }
     }
@@ -229,9 +231,11 @@ private fun Counter(
 }
 
 @Composable
-private fun Hint() {
+private fun Hint(visible: Boolean) {
     Text(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (visible) 1f else 0f),
         text = stringResource(R.string.text_hint),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

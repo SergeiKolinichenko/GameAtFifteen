@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryNight,
+    inversePrimary = PrimaryDay,
     onPrimary = OnPrimaryNight,
     primaryContainer = PrimaryContainerNight,
     onPrimaryContainer = OnPrimaryContainerNight,
@@ -28,6 +29,7 @@ private val DarkColorScheme = darkColorScheme(
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryDay,
+    inversePrimary = PrimaryNight,
     onPrimary = OnPrimaryDay,
     primaryContainer = PrimaryContainerDay,
     onPrimaryContainer = OnPrimaryContainerDay,

@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.screens.score.compose
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -237,7 +239,11 @@ private fun SortChips(
     selected: ScoreSort,
     onSelect: (ScoreSort) -> Unit
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    // Scrolls sideways when large font sizes make the chips wider than the screen
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         SortChip(ScoreSort.DATE, R.string.button_sort_by_date, selected, onSelect)
         SortChip(ScoreSort.MOVES, R.string.button_sort_by_moves, selected, onSelect)
         SortChip(ScoreSort.TIME, R.string.button_sort_by_time, selected, onSelect)

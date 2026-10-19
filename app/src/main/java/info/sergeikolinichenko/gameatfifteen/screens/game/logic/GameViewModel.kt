@@ -203,12 +203,14 @@ class GameViewModel @Inject constructor(
             val emptyX = getEmptyX()
             val emptyY = getEmptyY()
 
-            val board = gameBoard.value ?: getGameArray()
+            // Work on a deep copy so the board already on screen is never mutated
+            val current = gameBoard.value ?: getGameArray()
+            val board = Array(current.size) { current[it].copyOf() }
 
             board[emptyX][emptyY] = board[x][y]
             board[x][y] = GameBoardState.NoPlate
 
-            _gameBoard.value = board.copyOf()
+            _gameBoard.value = board
 
             if (chekWin()) gameWon()
         }

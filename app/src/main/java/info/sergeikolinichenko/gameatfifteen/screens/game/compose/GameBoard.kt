@@ -63,24 +63,28 @@ fun GameBoard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(padding)
         ) {
-            board?.forEachIndexed { x, row ->
-                row.forEachIndexed { y, plate ->
-                    if (plate != GameBoardState.NoPlate) {
-                        // key keeps each tile the same composable while it moves,
-                        // so its position animates instead of jumping
-                        key(plate.number) {
-                            Plate(
-                                number = plate.number,
-                                row = x,
-                                column = y,
-                                cell = cell,
-                                gap = gap,
-                                isInPlace = plate.number == (x * BOARD_SIZE + y + 1).toString(),
-                                enabled = isPlaying,
-                                onClick = { onClickPlate(plate.number) }
-                            )
-                        }
+            // Tiles are drawn in one flat list in a fixed order (by number), so each tile
+            // keeps its composable across moves and its position animates instead of jumping
+            val tiles = buildList {
+                board?.forEachIndexed { x, row ->
+                    row.forEachIndexed { y, plate ->
+                        if (plate != GameBoardState.NoPlate) add(Triple(plate.number, x, y))
                     }
+                }
+            }.sortedBy { it.first.toIntOrNull() ?: 0 }
+
+            tiles.forEach { (number, x, y) ->
+                key(number) {
+                    Plate(
+                        number = number,
+                        row = x,
+                        column = y,
+                        cell = cell,
+                        gap = gap,
+                        isInPlace = number == (x * BOARD_SIZE + y + 1).toString(),
+                        enabled = isPlaying,
+                        onClick = { onClickPlate(number) }
+                    )
                 }
             }
         }
