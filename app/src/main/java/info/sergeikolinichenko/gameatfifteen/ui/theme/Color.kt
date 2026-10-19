@@ -2,26 +2,37 @@ package info.sergeikolinichenko.gameatfifteen.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+// Warm orange brand palette. Tiles use primaryContainer, tiles already in
+// their place switch to primary, the board well is surfaceVariant.
 
-// My Day Color
-val PrimaryColorDay = Color(0xFFFFAA00)
-val PrimaryLightColorDay = Color(0xFFFFDC4A)
-val PrimaryDarkColorDay = Color(0xFFC67B00)
-val SecondaryColorDay = Color(0xFFFFD300)
-val SecondaryLightColorDay = Color(0xFFFFFF52)
-val SecondaryDarkColorDay = Color(0xFFC7A200)
-val TextColorDay = Color(0xFF000000)
+// Day
+val PrimaryDay = Color(0xFFB85C00)
+val OnPrimaryDay = Color(0xFFFFFFFF)
+val PrimaryContainerDay = Color(0xFFFFD6AE)
+val OnPrimaryContainerDay = Color(0xFF2E1500)
+val SecondaryDay = Color(0xFF735A46)
+val OnSecondaryDay = Color(0xFFFFFFFF)
+val SecondaryContainerDay = Color(0xFFFFDCC2)
+val OnSecondaryContainerDay = Color(0xFF2A1709)
+val BackgroundDay = Color(0xFFFFF8F3)
+val OnBackgroundDay = Color(0xFF221A14)
+val SurfaceVariantDay = Color(0xFFF1DFD0)
+val OnSurfaceVariantDay = Color(0xFF52443A)
+val SurfaceContainerDay = Color(0xFFF9ECE2)
+val OutlineDay = Color(0xFF857468)
 
-
-// My Night Color
-val PrimaryColorNight = Color(0xFF02092E)
-val PrimaryLightColorNight = Color(0xFF2c3157)
-val PrimaryDarkColorNight = Color(0xFF000006)
-val SecondaryColorNight = Color(0xFF011f2a)
-val SecondaryLightColorNight = Color(0xFF2b4653)
-val SecondaryDarkColorNight = Color(0xFF000000)
-val TextColorNight = Color(0xFFffffff)
+// Night
+val PrimaryNight = Color(0xFFFFB778)
+val OnPrimaryNight = Color(0xFF4B2700)
+val PrimaryContainerNight = Color(0xFF4A3424)
+val OnPrimaryContainerNight = Color(0xFFFFDCC0)
+val SecondaryNight = Color(0xFFE3C0A6)
+val OnSecondaryNight = Color(0xFF412C1B)
+val SecondaryContainerNight = Color(0xFF5A4230)
+val OnSecondaryContainerNight = Color(0xFFFFDCC2)
+val BackgroundNight = Color(0xFF17120E)
+val OnBackgroundNight = Color(0xFFEEE0D7)
+val SurfaceVariantNight = Color(0xFF2A221C)
+val OnSurfaceVariantNight = Color(0xFFD6C3B5)
+val SurfaceContainerNight = Color(0xFF231C17)
+val OutlineNight = Color(0xFF9F8D80)

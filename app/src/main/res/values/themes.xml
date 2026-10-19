@@ -2,5 +2,6 @@
 <resources>
 
     <style name="Theme.GameAtFifteen" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
     </style>
 </resources>

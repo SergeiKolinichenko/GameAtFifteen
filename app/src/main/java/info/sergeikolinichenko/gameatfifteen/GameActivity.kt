@@ -4,21 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.rememberNavController
 import info.sergeikolinichenko.gameatfifteen.navigation.AppNavGraph
 import info.sergeikolinichenko.gameatfifteen.navigation.Screen
 import info.sergeikolinichenko.gameatfifteen.screens.ViewModelsFactory
 import info.sergeikolinichenko.gameatfifteen.screens.game.compose.GameScreen
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
-import info.sergeikolinichenko.gameatfifteen.screens.score.compose.GameScore
+import info.sergeikolinichenko.gameatfifteen.screens.score.compose.ScoreScreen
 import info.sergeikolinichenko.gameatfifteen.screens.score.logic.ScoreViewModel
 import info.sergeikolinichenko.gameatfifteen.ui.theme.GameAtFifteenTheme
 import javax.inject.Inject
@@ -38,54 +35,39 @@ class GameActivity : ComponentActivity() {
         (application as GameApp).component
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        gameViewModel.getOrientationScreen(resources.configuration.orientation)
-        scoreViewModel.getOrientationScreen(resources.configuration.orientation)
-
         setContent {
-
-            /*
-            Crutch for Xiaomi X3, without it,
-            when you rotate the screen to Portrait orientation,
-             there was a blank screen.
-              Couldn't think of anything better...
-             */
-            Text(text = " ")
-
             GameAtFifteenTheme {
-
                 Surface(
-                    modifier = Modifier
-                        .background(color = MaterialTheme.colors.background)
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
                 ) {
+                    val navHostController = rememberNavController()
 
-                    val navHostController = rememberAnimatedNavController()
-
-                    // Edge-to-edge: background goes under the system bars,
-                    // content stays clear of them
-                    Box(modifier = Modifier.safeDrawingPadding()) {
-                        AppNavGraph(
-                            navHostController = navHostController,
-                            gameScreenContent = {
-
-                                GameScreen(
-                                    viewModel = gameViewModel,
-                                    clickButtonStatistics = {
-                                        navHostController.navigate(Screen.Scores.route)
+                    AppNavGraph(
+                        navHostController = navHostController,
+                        gameScreenContent = {
+                            GameScreen(
+                                viewModel = gameViewModel,
+                                onClickStatistics = {
+                                    navHostController.navigate(Screen.Scores.route) {
+                                        launchSingleTop = true
                                     }
-                                )
-                            },
-                            scoresScreenContent = {
-                                GameScore(viewModel = scoreViewModel)
-                            }
-                        )
-                    }
+                                }
+                            )
+                        },
+                        scoresScreenContent = {
+                            ScoreScreen(
+                                viewModel = scoreViewModel,
+                                onBack = { navHostController.popBackStack() },
+                                onPlay = { navHostController.popBackStack() }
+                            )
+                        }
+                    )
                 }
             }
         }

@@ -1,117 +1,159 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.screens.game.ResponsiveText
+import info.sergeikolinichenko.gameatfifteen.ui.theme.NumbersStyle
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
+private const val BOARD_SIZE = 4
+
 @Composable
-fun GameBoard (viewModel: GameViewModel) {
-
-    val plateState by viewModel.gameBoard.observeAsState()
-    val isPlaying by viewModel.isPlaying.observeAsState(false)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+fun GameBoard(
+    board: Array<Array<GameBoardState>>?,
+    isPlaying: Boolean,
+    onClickPlate: (number: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
+        // The board is always square and as large as the space allows
+        val side = if (maxWidth < maxHeight) maxWidth else maxHeight
+        val padding = side * 0.025f
+        val gap = side * 0.02f
+        val cell = (side - padding * 2 - gap * (BOARD_SIZE - 1)) / BOARD_SIZE
 
-        plateState?.forEach { arrayOfGameBoardStates ->
-
-            Row(modifier = Modifier.weight(1f)) {
-
-                arrayOfGameBoardStates.forEach { plate ->
-
-                    Box(modifier = Modifier.weight(1f)) {
-
-                        GameButton(
-                            state = plate,
-                            enabled = isPlaying && plate != GameBoardState.NoPlate
-                        ) {
-                            viewModel.onClickGameButton(it)
+        Box(
+            modifier = Modifier
+                .size(side)
+                .clip(MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(padding)
+        ) {
+            board?.forEachIndexed { x, row ->
+                row.forEachIndexed { y, plate ->
+                    if (plate != GameBoardState.NoPlate) {
+                        // key keeps each tile the same composable while it moves,
+                        // so its position animates instead of jumping
+                        key(plate.number) {
+                            Plate(
+                                number = plate.number,
+                                row = x,
+                                column = y,
+                                cell = cell,
+                                gap = gap,
+                                isInPlace = plate.number == (x * BOARD_SIZE + y + 1).toString(),
+                                enabled = isPlaying,
+                                onClick = { onClickPlate(plate.number) }
+                            )
                         }
                     }
-
                 }
-
             }
-
         }
     }
 }
 
 @Composable
-private fun GameButton(
-    state: GameBoardState,
+private fun Plate(
+    number: String,
+    row: Int,
+    column: Int,
+    cell: Dp,
+    gap: Dp,
+    isInPlace: Boolean,
     enabled: Boolean,
-    onClickListener: (number: String) -> Unit
+    onClick: () -> Unit
 ) {
-
-    Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 2.dp, top = 2.dp)
-            .clickable(enabled = enabled) { onClickListener(state.number) },
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(
-            1.dp,
-            color = MaterialTheme.colors.onPrimary
+    val density = LocalDensity.current
+    val target = with(density) {
+        IntOffset(
+            x = ((cell + gap) * column).roundToPx(),
+            y = ((cell + gap) * row).roundToPx()
         )
-    ) {
+    }
+    val offset by animateIntOffsetAsState(
+        targetValue = target,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "plateOffset"
+    )
 
-        ResponsiveTitleText(modifier = Modifier.wrapContentSize(), text = state.number)
+    val colors = MaterialTheme.colorScheme
+    val background by animateColorAsState(
+        targetValue = if (isInPlace) colors.primary else colors.primaryContainer,
+        label = "plateBackground"
+    )
+    val content by animateColorAsState(
+        targetValue = if (isInPlace) colors.onPrimary else colors.onPrimaryContainer,
+        label = "plateContent"
+    )
+
+    val shape = RoundedCornerShape(cell * 0.2f)
+    val fontSize = with(density) { (cell * 0.42f).toSp() }
+
+    Box(
+        modifier = Modifier
+            .offset { offset }
+            .size(cell)
+            .shadow(elevation = 2.dp, shape = shape)
+            .clip(shape)
+            .background(background)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                // A swipe on a tile works the same as a tap
+                val threshold = 16.dp.toPx()
+                var total = Offset.Zero
+                detectDragGestures(
+                    onDragStart = { total = Offset.Zero },
+                    onDragEnd = { if (total.getDistance() > threshold) onClick() }
+                ) { change, dragAmount ->
+                    change.consume()
+                    total += dragAmount
+                }
+            }
+            .semantics { contentDescription = number },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = number,
+            color = content,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            style = NumbersStyle
+        )
     }
 }
-
-@Composable
-private fun ResponsiveTitleText(
-    modifier: Modifier = Modifier,
-    text: String,
-) {
-    ResponsiveText(
-        modifier = modifier,
-        text = text,
-        textStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Black),
-        textAlign = TextAlign.End
-    )
-}
-
-//@Preview
-//@Composable
-//fun PreviewThemeLightGameBoard() {
-//    GameAtFifteenTheme(
-//        darkTheme = false
-//    ) {
-//        GameBoard()
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun PreviewThemeDarkGameBoard() {
-//    GameAtFifteenTheme(
-//        darkTheme = true
-//    ) {
-//        GameBoard()
-//    }
-//}

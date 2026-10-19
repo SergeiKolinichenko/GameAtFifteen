@@ -2,16 +2,16 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.logic
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameControlButtonState
-import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinDialogButtonState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinResult
 import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
+import info.sergeikolinichenko.gameatfifteen.usecases.GetListScoreGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetScoreGameUseCase
 import info.sergeikolinichenko.gameatfifteen.utils.ConvertUtils.intToTimeString
@@ -27,12 +27,9 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     private val setGame: SetGameUseCase,
     private val getGame: GetGameUseCase,
-    private val setScoreGame: SetScoreGameUseCase
+    private val setScoreGame: SetScoreGameUseCase,
+    getListScoreGame: GetListScoreGameUseCase
 ) : ViewModel() {
-
-    private var _gameControlButtonState =
-        MutableLiveData<GameControlButtonState>(GameControlButtonState.InitialButtons)
-    val gameControlButtonState: LiveData<GameControlButtonState> = _gameControlButtonState
 
     private var _timeElapsedText = MutableLiveData(RESET_STRING_TO_EMPTY)
     val timeElapsedText: LiveData<String> = _timeElapsedText
@@ -51,14 +48,19 @@ class GameViewModel @Inject constructor(
     private var _winResult = MutableLiveData<WinResult?>(null)
     val winResult: LiveData<WinResult?> = _winResult
 
-    private var _orientationScreen = MutableLiveData<Int>()
-    val orientationScreen: LiveData<Int> = _orientationScreen
-
     private var _movesNumber = RESET_INT_COUNTER_TO_ZERO
     private var _countTimer = RESET_INT_COUNTER_TO_ZERO
     private var timerJob: Job? = null
 
+    // Saved results, to tell the player about a new record
+    private val listScoreGame: LiveData<List<ScoreGame>> = getListScoreGame.invoke()
+    private var scores: List<ScoreGame> = emptyList()
+    private val scoresObserver = Observer<List<ScoreGame>> { list ->
+        scores = list.filter { it.timeUsed > 0 }
+    }
+
     init {
+        listScoreGame.observeForever(scoresObserver)
         initGameScreen()
     }
 
@@ -70,22 +72,17 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun getOrientationScreen(orientation: Int) {
-        _orientationScreen.value = orientation
+    fun onClickStartGame() {
+        startGame()
     }
 
-    fun getPressedGameControlButton(state: GameControlButtonState) {
-
-        if (state is GameControlButtonState.ButtonStartGame) {
-            startGame()
-        } else {
-            gameOver()
-        }
+    fun onClickGiveUp() {
+        gameOver()
     }
 
-    fun onClickWinDialogButton(state: WinDialogButtonState) {
+    fun onClickPlayAgain() {
         setHideWinDialog()
-        if (state is WinDialogButtonState.WinDialogButtonStart) startGame()
+        startGame()
     }
 
     fun onDismissWinDialog() {
@@ -108,7 +105,33 @@ class GameViewModel @Inject constructor(
             }
         }
 
-        makeMove(indexX, indexY)
+        if (indexX < 0) return
+
+        // A tap on any tile in the row or column of the empty cell slides
+        // the whole chain; each moved tile counts as one move
+        val emptyX = getEmptyX()
+        val emptyY = getEmptyY()
+        when {
+            indexX == emptyX && indexY != emptyY -> {
+                val step = if (indexY > emptyY) 1 else -1
+                var y = emptyY + step
+                while (_isPlaying.value == true) {
+                    makeMove(indexX, y)
+                    if (y == indexY) break
+                    y += step
+                }
+            }
+
+            indexY == emptyY && indexX != emptyX -> {
+                val step = if (indexX > emptyX) 1 else -1
+                var x = emptyX + step
+                while (_isPlaying.value == true) {
+                    makeMove(x, indexY)
+                    if (x == indexX) break
+                    x += step
+                }
+            }
+        }
     }
 
     // Called when the app goes to the background: the clock must not run
@@ -125,7 +148,6 @@ class GameViewModel @Inject constructor(
         _isPlaying.value = false
         _gameBoard.value = getGameArray()
         resetCounters()
-        setButtonStateGameOver()
         clearSavedGame()
     }
 
@@ -137,7 +159,6 @@ class GameViewModel @Inject constructor(
         _timeElapsedText.value = RESET_INT_COUNTER_TO_ZERO.intToTimeString()
         _movesNumberText.value = RESET_INT_COUNTER_TO_ZERO.toString()
         _isPlaying.value = true
-        setButtonStateStartGame()
     }
 
     // A random permutation is solvable for a 4x4 board only when
@@ -196,12 +217,17 @@ class GameViewModel @Inject constructor(
     private fun gameWon() {
         stopTimer()
         _isPlaying.value = false
+        // Compare with the results saved before this game
+        val bestMoves = scores.minOfOrNull { it.doneMoves }
+        val bestTime = scores.minOfOrNull { it.timeUsed }
         saveScoreGame()
         clearSavedGame()
-        setButtonStateGameOver()
         _winResult.value = WinResult(
             moves = _movesNumber,
-            time = _countTimer.intToTimeString()
+            time = _countTimer.intToTimeString(),
+            isRecordMoves = bestMoves != null && _movesNumber < bestMoves,
+            isRecordTime = bestTime != null && _countTimer < bestTime,
+            isFirstWin = scores.isEmpty()
         )
     }
 
@@ -271,14 +297,6 @@ class GameViewModel @Inject constructor(
         _timeElapsedText.value = RESET_STRING_TO_EMPTY
     }
 
-    private fun setButtonStateStartGame() {
-        _gameControlButtonState.value = GameControlButtonState.ButtonStartGame
-    }
-
-    private fun setButtonStateGameOver() {
-        _gameControlButtonState.value = GameControlButtonState.ButtonGameOver
-    }
-
     // One ticking job at most, so the clock can never run twice as fast
     private fun startTimer() {
         if (timerJob?.isActive == true) return
@@ -337,7 +355,6 @@ class GameViewModel @Inject constructor(
         _movesNumberText.value = _movesNumber.toString()
         _timeElapsedText.value = _countTimer.intToTimeString()
         _isPlaying.value = true
-        setButtonStateStartGame()
     }
 
     private fun getGameBoardToJson(): String {
@@ -379,6 +396,7 @@ class GameViewModel @Inject constructor(
 
     override fun onCleared() {
         stopTimer()
+        listScoreGame.removeObserver(scoresObserver)
         super.onCleared()
     }
 
