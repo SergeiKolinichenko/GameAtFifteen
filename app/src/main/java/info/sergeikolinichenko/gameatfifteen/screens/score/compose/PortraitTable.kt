@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +37,9 @@ fun PortraitTable(
 
         items(items = scores.value, key = { it.timeStamp }) {
 
-            val dismissState = rememberDismissState()
+            // Plain remember, not rememberDismissState(): the saveable version is restored
+            // for the same key after Undo and deletes the row again
+            val dismissState = remember(it.timeStamp) { DismissState(DismissValue.Default) }
 
             if (dismissState.isDismissed(DismissDirection.StartToEnd)) {
                 // Once per swipe, not on every recomposition
