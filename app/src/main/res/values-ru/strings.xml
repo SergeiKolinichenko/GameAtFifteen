@@ -38,4 +38,9 @@
     <string name="summary_best_moves">Лучшие ходы</string>
     <string name="summary_best_time">Лучшее время</string>
     <string name="empty_scores">Пока нет партий.\nВыиграй первую, и она появится здесь.</string>
+    <string name="skin_title">Стиль плиток</string>
+    <string name="skin_classic">Классика</string>
+    <string name="skin_dark_wood">Тёмное дерево</string>
+    <string name="skin_light_wood">Светлое дерево</string>
+    <string name="skin_orange">Апельсин</string>
 </resources>

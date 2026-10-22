@@ -38,4 +38,9 @@
     <string name="summary_best_moves">Best moves</string>
     <string name="summary_best_time">Best time</string>
     <string name="empty_scores">No games yet.\nWin one and it will show up here.</string>
+    <string name="skin_title">Tile style</string>
+    <string name="skin_classic">Classic</string>
+    <string name="skin_dark_wood">Dark wood</string>
+    <string name="skin_light_wood">Light wood</string>
+    <string name="skin_orange">Orange</string>
 </resources>

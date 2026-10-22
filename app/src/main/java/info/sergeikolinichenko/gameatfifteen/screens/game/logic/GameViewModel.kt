@@ -10,6 +10,8 @@ import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinResult
+import info.sergeikolinichenko.gameatfifteen.ui.skins.SkinStore
+import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
 import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.GetListScoreGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.SetGameUseCase
@@ -28,8 +30,12 @@ class GameViewModel @Inject constructor(
     private val setGame: SetGameUseCase,
     private val getGame: GetGameUseCase,
     private val setScoreGame: SetScoreGameUseCase,
-    getListScoreGame: GetListScoreGameUseCase
+    getListScoreGame: GetListScoreGameUseCase,
+    private val skinStore: SkinStore
 ) : ViewModel() {
+
+    private var _tileSkin = MutableLiveData(skinStore.get())
+    val tileSkin: LiveData<TileSkin> = _tileSkin
 
     private var _timeElapsedText = MutableLiveData(RESET_STRING_TO_EMPTY)
     val timeElapsedText: LiveData<String> = _timeElapsedText
@@ -70,6 +76,11 @@ class GameViewModel @Inject constructor(
         } else {
             _gameBoard.value = getGameArray()
         }
+    }
+
+    fun onSelectSkin(skin: TileSkin) {
+        skinStore.set(skin)
+        _tileSkin.value = skin
     }
 
     fun onClickStartGame() {
