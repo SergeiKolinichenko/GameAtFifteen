@@ -8,7 +8,6 @@
     <string name="button_play">Играй</string>
     <string name="text_move_number">Ходове</string>
     <string name="text_time_elapsed">Време</string>
-    <string name="text_hint">Подреди плочките от 1 до 15</string>
     <string name="win_dialog_congratulations">Победа!</string>
     <string name="win_dialog_title_button_cancel">Затвори</string>
     <string name="win_dialog_title_button_start">Отново</string>
@@ -43,4 +42,10 @@
     <string name="skin_dark_wood">Тъмно дърво</string>
     <string name="skin_light_wood">Светло дърво</string>
     <string name="skin_orange">Портокал</string>
+    <string name="text_hint">Подреди от 1 до\u00A0%1$d</string>
+    <string name="board_size">%1$d×%1$d</string>
+    <string name="board_size_title">Размер на полето</string>
+    <string name="button_pause">Пауза</string>
+    <string name="paused_title">Пауза</string>
+    <string name="button_resume">Продължи</string>
 </resources>

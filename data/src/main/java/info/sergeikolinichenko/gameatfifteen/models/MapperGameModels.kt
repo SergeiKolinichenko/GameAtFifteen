@@ -23,13 +23,15 @@ class MapperGameModels @Inject constructor() {
     fun mapEntityToDbModel(scoreGame: ScoreGame) = ScoreGameDbModel(
         timeStamp = scoreGame.timeStamp,
         doneMoves = scoreGame.doneMoves,
-        timeUsed = scoreGame.timeUsed
+        timeUsed = scoreGame.timeUsed,
+        boardSize = scoreGame.boardSize
     )
 
     private fun mapDbModelToEntity(scoreGameDbModel: ScoreGameDbModel) = ScoreGame(
         timeStamp = scoreGameDbModel.timeStamp,
         doneMoves = scoreGameDbModel.doneMoves,
-        timeUsed = scoreGameDbModel.timeUsed
+        timeUsed = scoreGameDbModel.timeUsed,
+        boardSize = scoreGameDbModel.boardSize
     )
 
     fun mapListDbModelToListEntity(list: List<ScoreGameDbModel>) = list.map {

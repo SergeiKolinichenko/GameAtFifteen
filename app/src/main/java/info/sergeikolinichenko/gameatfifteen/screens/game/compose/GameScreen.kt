@@ -2,6 +2,8 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,10 +21,14 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,14 +45,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
+import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
 import info.sergeikolinichenko.gameatfifteen.ui.theme.NumbersStyle
 
@@ -63,6 +72,10 @@ fun GameScreen(
     val time by viewModel.timeElapsedText.observeAsState("")
     val winResult by viewModel.winResult.observeAsState()
     val skin by viewModel.tileSkin.observeAsState(TileSkin.CLASSIC)
+    val boardSize by viewModel.boardSize.observeAsState(GameBoardState.DEFAULT_SIZE)
+    val isPaused by viewModel.isPaused.observeAsState(false)
+    // Before the first move the clock stands anyway
+    val canPause = isPlaying && !isPaused && (moves.toIntOrNull() ?: 0) > 0
 
     var showGiveUpDialog by rememberSaveable { mutableStateOf(false) }
     var showSkinPicker by rememberSaveable { mutableStateOf(false) }
@@ -76,9 +89,6 @@ fun GameScreen(
     LaunchedEffect(winResult) {
         if (winResult != null) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
-    // Back from the statistics screen: the game continues
-    LaunchedEffect(Unit) { viewModel.resumeGame() }
-
     val openStatistics = {
         viewModel.pauseGame()
         onClickStatistics()
@@ -88,8 +98,10 @@ fun GameScreen(
         GameBoard(
             board = board,
             isPlaying = isPlaying,
+            isPaused = isPaused,
             skin = skin,
             onClickPlate = { viewModel.onClickGameButton(it) },
+            onResume = { viewModel.resumeGame() },
             modifier = modifier
         )
     }
@@ -120,11 +132,17 @@ fun GameScreen(
             ) {
                 TopBar(
                     skin = skin,
+                    canPause = canPause,
+                    onClickPause = { viewModel.pauseGame() },
                     onClickSkin = { showSkinPicker = true },
                     onClickStatistics = openStatistics
                 )
                 Counters(moves = moves, time = time)
-                Hint(visible = !isPlaying)
+                IdleControls(
+                    visible = !isPlaying,
+                    boardSize = boardSize,
+                    onSelectSize = { viewModel.onSelectBoardSize(it) }
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 actionButton()
             }
@@ -144,6 +162,8 @@ fun GameScreen(
         ) {
             TopBar(
                 skin = skin,
+                canPause = canPause,
+                onClickPause = { viewModel.pauseGame() },
                 onClickSkin = { showSkinPicker = true },
                 onClickStatistics = openStatistics
             )
@@ -153,8 +173,12 @@ fun GameScreen(
                     .weight(1f)
                     .fillMaxWidth()
             )
-            // The hint keeps its space while playing, so the board does not jump
-            Hint(visible = !isPlaying)
+            // The hint and the size keep their space while playing, so the board does not jump
+            IdleControls(
+                visible = !isPlaying,
+                boardSize = boardSize,
+                onSelectSize = { viewModel.onSelectBoardSize(it) }
+            )
             actionButton()
         }
     }
@@ -187,6 +211,8 @@ fun GameScreen(
 @Composable
 private fun TopBar(
     skin: TileSkin,
+    canPause: Boolean,
+    onClickPause: () -> Unit,
     onClickSkin: () -> Unit,
     onClickStatistics: () -> Unit
 ) {
@@ -202,6 +228,15 @@ private fun TopBar(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
+        if (canPause) {
+            IconButton(onClick = onClickPause) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_pause),
+                    contentDescription = stringResource(R.string.button_pause),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         // The button shows the current skin itself
         IconButton(
             onClick = onClickSkin,
@@ -264,17 +299,49 @@ private fun Counter(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Hint(visible: Boolean) {
-    Text(
+private fun IdleControls(
+    visible: Boolean,
+    boardSize: Int,
+    onSelectSize: (Int) -> Unit
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .alpha(if (visible) 1f else 0f),
-        text = stringResource(R.string.text_hint),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center
-    )
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // One line always: with a large system font it shrinks instead of wrapping
+        val hintStyle = MaterialTheme.typography.bodyMedium
+        BasicText(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.text_hint, boardSize * boardSize - 1),
+            style = hintStyle.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            ),
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = hintStyle.fontSize)
+        )
+        val sizes = GameBoardState.SIZES.toList()
+        val sizeTitle = stringResource(R.string.board_size_title)
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = sizeTitle }
+        ) {
+            sizes.forEachIndexed { index, size ->
+                SegmentedButton(
+                    selected = size == boardSize,
+                    onClick = { onSelectSize(size) },
+                    enabled = visible,
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = sizes.size),
+                    label = { Text(text = stringResource(R.string.board_size, size)) }
+                )
+            }
+        }
+    }
 }
 
 @Composable

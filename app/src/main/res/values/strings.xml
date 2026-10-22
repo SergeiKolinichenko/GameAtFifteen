@@ -8,7 +8,6 @@
     <string name="button_play">Play</string>
     <string name="text_move_number">Moves</string>
     <string name="text_time_elapsed">Time</string>
-    <string name="text_hint">Put the tiles in order from 1 to 15</string>
     <string name="win_dialog_congratulations">You won!</string>
     <string name="win_dialog_title_button_cancel">Close</string>
     <string name="win_dialog_title_button_start">Play again</string>
@@ -43,4 +42,10 @@
     <string name="skin_dark_wood">Dark wood</string>
     <string name="skin_light_wood">Light wood</string>
     <string name="skin_orange">Orange</string>
+    <string name="text_hint">Order the tiles 1 to\u00A0%1$d</string>
+    <string name="board_size">%1$d×%1$d</string>
+    <string name="board_size_title">Board size</string>
+    <string name="button_pause">Pause</string>
+    <string name="paused_title">Paused</string>
+    <string name="button_resume">Continue</string>
 </resources>

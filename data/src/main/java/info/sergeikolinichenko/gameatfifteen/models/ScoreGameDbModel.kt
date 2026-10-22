@@ -1,5 +1,6 @@
 package info.sergeikolinichenko.gameatfifteen.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -10,5 +11,7 @@ data class ScoreGameDbModel(
     @PrimaryKey(autoGenerate = false)
     val timeStamp: Long,
     val doneMoves: Int,
-    val timeUsed: Int
+    val timeUsed: Int,
+    @ColumnInfo(defaultValue = "4")
+    val boardSize: Int
 )

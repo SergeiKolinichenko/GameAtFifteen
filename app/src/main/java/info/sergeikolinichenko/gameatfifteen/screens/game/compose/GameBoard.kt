@@ -6,11 +6,22 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -20,12 +31,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.ui.skins.TileFace
 import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
@@ -37,16 +50,17 @@ import info.sergeikolinichenko.gameatfifteen.ui.skins.tileShape
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
-private const val BOARD_SIZE = 4
-
 @Composable
 fun GameBoard(
     board: Array<Array<GameBoardState>>?,
     isPlaying: Boolean,
+    isPaused: Boolean,
     skin: TileSkin,
     onClickPlate: (number: String) -> Unit,
+    onResume: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val boardSize = board?.size ?: GameBoardState.DEFAULT_SIZE
     BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -55,7 +69,7 @@ fun GameBoard(
         val side = if (maxWidth < maxHeight) maxWidth else maxHeight
         val padding = side * skin.paddingFraction
         val gap = side * skin.gapFraction
-        val cell = (side - padding * 2 - gap * (BOARD_SIZE - 1)) / BOARD_SIZE
+        val cell = (side - padding * 2 - gap * (boardSize - 1)) / boardSize
 
         Box(
             modifier = Modifier
@@ -98,12 +112,14 @@ fun GameBoard(
                         cell = cell,
                         gap = gap,
                         skin = skin,
-                        isInPlace = number == (x * BOARD_SIZE + y + 1).toString(),
-                        enabled = isPlaying,
+                        isInPlace = number == (x * boardSize + y + 1).toString(),
+                        enabled = isPlaying && !isPaused,
                         onClick = { onClickPlate(number) }
                     )
                 }
             }
+
+            if (isPaused) PauseCurtain(onResume = onResume)
         }
     }
 }
@@ -158,4 +174,34 @@ private fun Plate(
             }
             .semantics { contentDescription = number }
     )
+}
+
+// Hides the tiles while the clock stands, so the next moves cannot be planned for free
+@Composable
+private fun PauseCurtain(onResume: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .clickable(onClick = onResume),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.paused_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Button(onClick = onResume) {
+            Icon(
+                imageVector = Icons.Filled.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
+            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            Text(text = stringResource(R.string.button_resume))
+        }
+    }
 }

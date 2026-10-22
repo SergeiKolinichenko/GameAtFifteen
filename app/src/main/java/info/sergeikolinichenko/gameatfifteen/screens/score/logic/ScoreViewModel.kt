@@ -8,6 +8,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import info.sergeikolinichenko.gameatfifteen.models.ScoreGame
 import info.sergeikolinichenko.gameatfifteen.screens.score.state.ScoreSort
+import info.sergeikolinichenko.gameatfifteen.settings.GameSettings
 import info.sergeikolinichenko.gameatfifteen.screens.score.state.ScoreSummary
 import info.sergeikolinichenko.gameatfifteen.usecases.*
 import kotlinx.coroutines.launch
@@ -21,7 +22,8 @@ class ScoreViewModel @Inject constructor(
     private val deleteScoreGame: DeleteScoreGameUseCase,
     private val deleteAllScoresGame: DeleteAllScoresGameUseCase,
     private val setListScoresSortUseCase: SetListScoresSortUseCase,
-    private val setScoreGame: SetScoreGameUseCase
+    private val setScoreGame: SetScoreGameUseCase,
+    private val settings: GameSettings
 ) : ViewModel() {
 
     // Earlier versions could save a fake win without playing (0 seconds)
@@ -33,20 +35,54 @@ class ScoreViewModel @Inject constructor(
     private val _sortBy = MutableLiveData(ScoreSort.fromKey(getListScoresSortUseCase.invoke()))
     val sortBy: LiveData<ScoreSort> = _sortBy
 
-    val scores: LiveData<List<ScoreGame>> = MediatorLiveData<List<ScoreGame>>().apply {
+    // Records are kept apart for every board size
+    private val _boardSize = MutableLiveData(settings.boardSize)
+    val boardSize: LiveData<Int> = _boardSize
+
+    val hasScores: LiveData<Boolean> = allScores.map { it.isNotEmpty() }
+
+    // Sizes worth a chip: the ones played, and the one chosen now
+    val sizes: LiveData<List<Int>> = MediatorLiveData<List<Int>>().apply {
         val update = {
-            value = sortScores(allScores.value.orEmpty(), _sortBy.value ?: ScoreSort.DATE)
+            value = (allScores.value.orEmpty().map { it.boardSize } + listOfNotNull(_boardSize.value))
+                .distinct()
+                .sorted()
         }
         addSource(allScores) { update() }
+        addSource(_boardSize) { update() }
+    }
+
+    private val sizeScores: LiveData<List<ScoreGame>> = MediatorLiveData<List<ScoreGame>>().apply {
+        val update = {
+            value = allScores.value.orEmpty().filter { it.boardSize == _boardSize.value }
+        }
+        addSource(allScores) { update() }
+        addSource(_boardSize) { update() }
+    }
+
+    val scores: LiveData<List<ScoreGame>> = MediatorLiveData<List<ScoreGame>>().apply {
+        val update = {
+            value = sortScores(sizeScores.value.orEmpty(), _sortBy.value ?: ScoreSort.DATE)
+        }
+        addSource(sizeScores) { update() }
         addSource(_sortBy) { update() }
     }
 
-    val summary: LiveData<ScoreSummary> = allScores.map { list ->
+    val summary: LiveData<ScoreSummary> = sizeScores.map { list ->
         ScoreSummary(
             games = list.size,
             bestMoves = list.minOfOrNull { it.doneMoves },
             bestTime = list.minOfOrNull { it.timeUsed }
         )
+    }
+
+    // The screen opens on the size the player plays now
+    fun onOpen() {
+        _boardSize.value = settings.boardSize
+    }
+
+    fun setBoardSize(size: Int) {
+        _boardSize.value = size
     }
 
     private fun sortScores(list: List<ScoreGame>, sort: ScoreSort): List<ScoreGame> =
