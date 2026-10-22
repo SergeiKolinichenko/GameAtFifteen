@@ -42,7 +42,7 @@
     <string name="skin_dark_wood">Тъмно дърво</string>
     <string name="skin_light_wood">Светло дърво</string>
     <string name="skin_orange">Портокал</string>
-    <string name="text_hint">Подреди плочките от 1 до\u00A0%1$d</string>
+    <string name="text_hint">Подреди от 1 до\u00A0%1$d</string>
     <string name="board_size">%1$d×%1$d</string>
     <string name="board_size_title">Размер на полето</string>
     <string name="button_pause">Пауза</string>
