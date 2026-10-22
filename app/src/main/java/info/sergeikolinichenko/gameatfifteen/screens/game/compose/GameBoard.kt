@@ -1,6 +1,5 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.spring
@@ -12,28 +11,29 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
-import info.sergeikolinichenko.gameatfifteen.ui.theme.NumbersStyle
+import info.sergeikolinichenko.gameatfifteen.ui.skins.TileFace
+import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
+import info.sergeikolinichenko.gameatfifteen.ui.skins.emptyCellColor
+import info.sergeikolinichenko.gameatfifteen.ui.skins.gapFraction
+import info.sergeikolinichenko.gameatfifteen.ui.skins.paddingFraction
+import info.sergeikolinichenko.gameatfifteen.ui.skins.skinBoard
+import info.sergeikolinichenko.gameatfifteen.ui.skins.tileShape
 
 /** Created by Sergei Kolinichenko on 07.01.2023 at 14:50 (GMT+3) **/
 
@@ -43,6 +43,7 @@ private const val BOARD_SIZE = 4
 fun GameBoard(
     board: Array<Array<GameBoardState>>?,
     isPlaying: Boolean,
+    skin: TileSkin,
     onClickPlate: (number: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -52,15 +53,14 @@ fun GameBoard(
     ) {
         // The board is always square and as large as the space allows
         val side = if (maxWidth < maxHeight) maxWidth else maxHeight
-        val padding = side * 0.025f
-        val gap = side * 0.02f
+        val padding = side * skin.paddingFraction
+        val gap = side * skin.gapFraction
         val cell = (side - padding * 2 - gap * (BOARD_SIZE - 1)) / BOARD_SIZE
 
         Box(
             modifier = Modifier
                 .size(side)
-                .clip(MaterialTheme.shapes.large)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .skinBoard(skin = skin, side = side, padding = padding)
                 .padding(padding)
         ) {
             // Tiles are drawn in one flat list in a fixed order (by number), so each tile
@@ -73,6 +73,22 @@ fun GameBoard(
                 }
             }.sortedBy { it.first.toIntOrNull() ?: 0 }
 
+            skin.emptyCellColor?.let { color ->
+                board?.forEachIndexed { x, row ->
+                    row.forEachIndexed { y, plate ->
+                        if (plate == GameBoardState.NoPlate) {
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = (cell + gap) * y, y = (cell + gap) * x)
+                                    .size(cell)
+                                    .clip(skin.tileShape(cell))
+                                    .background(color)
+                            )
+                        }
+                    }
+                }
+            }
+
             tiles.forEach { (number, x, y) ->
                 key(number) {
                     Plate(
@@ -81,6 +97,7 @@ fun GameBoard(
                         column = y,
                         cell = cell,
                         gap = gap,
+                        skin = skin,
                         isInPlace = number == (x * BOARD_SIZE + y + 1).toString(),
                         enabled = isPlaying,
                         onClick = { onClickPlate(number) }
@@ -98,6 +115,7 @@ private fun Plate(
     column: Int,
     cell: Dp,
     gap: Dp,
+    skin: TileSkin,
     isInPlace: Boolean,
     enabled: Boolean,
     onClick: () -> Unit
@@ -115,26 +133,15 @@ private fun Plate(
         label = "plateOffset"
     )
 
-    val colors = MaterialTheme.colorScheme
-    val background by animateColorAsState(
-        targetValue = if (isInPlace) colors.primary else colors.primaryContainer,
-        label = "plateBackground"
-    )
-    val content by animateColorAsState(
-        targetValue = if (isInPlace) colors.onPrimary else colors.onPrimaryContainer,
-        label = "plateContent"
-    )
-
-    val shape = RoundedCornerShape(cell * 0.2f)
-    val fontSize = with(density) { (cell * 0.42f).toSp() }
-
-    Box(
+    TileFace(
+        skin = skin,
+        number = number,
+        isInPlace = isInPlace,
+        cell = cell,
         modifier = Modifier
             .offset { offset }
-            .size(cell)
-            .shadow(elevation = 2.dp, shape = shape)
-            .clip(shape)
-            .background(background)
+            .size(cell),
+        surfaceModifier = Modifier
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
@@ -149,15 +156,6 @@ private fun Plate(
                     total += dragAmount
                 }
             }
-            .semantics { contentDescription = number },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = number,
-            color = content,
-            fontSize = fontSize,
-            fontWeight = FontWeight.Bold,
-            style = NumbersStyle
-        )
-    }
+            .semantics { contentDescription = number }
+    )
 }

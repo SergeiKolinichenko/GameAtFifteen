@@ -40,11 +40,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import info.sergeikolinichenko.gameatfifteen.R
 import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
+import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
 import info.sergeikolinichenko.gameatfifteen.ui.theme.NumbersStyle
 
 /** Created by Sergei Kolinichenko on 24.01.2023 at 20:19 (GMT+3) **/
@@ -59,8 +62,10 @@ fun GameScreen(
     val moves by viewModel.movesNumberText.observeAsState("")
     val time by viewModel.timeElapsedText.observeAsState("")
     val winResult by viewModel.winResult.observeAsState()
+    val skin by viewModel.tileSkin.observeAsState(TileSkin.CLASSIC)
 
     var showGiveUpDialog by rememberSaveable { mutableStateOf(false) }
+    var showSkinPicker by rememberSaveable { mutableStateOf(false) }
 
     val haptic = LocalHapticFeedback.current
     LaunchedEffect(moves) {
@@ -83,6 +88,7 @@ fun GameScreen(
         GameBoard(
             board = board,
             isPlaying = isPlaying,
+            skin = skin,
             onClickPlate = { viewModel.onClickGameButton(it) },
             modifier = modifier
         )
@@ -112,7 +118,11 @@ fun GameScreen(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                TopBar(onClickStatistics = openStatistics)
+                TopBar(
+                    skin = skin,
+                    onClickSkin = { showSkinPicker = true },
+                    onClickStatistics = openStatistics
+                )
                 Counters(moves = moves, time = time)
                 Hint(visible = !isPlaying)
                 Spacer(modifier = Modifier.weight(1f))
@@ -132,7 +142,11 @@ fun GameScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TopBar(onClickStatistics = openStatistics)
+            TopBar(
+                skin = skin,
+                onClickSkin = { showSkinPicker = true },
+                onClickStatistics = openStatistics
+            )
             Counters(moves = moves, time = time)
             gameBoard(
                 Modifier
@@ -151,6 +165,14 @@ fun GameScreen(
         onDismiss = { viewModel.onDismissWinDialog() }
     )
 
+    if (showSkinPicker) {
+        SkinPicker(
+            current = skin,
+            onSelect = { viewModel.onSelectSkin(it) },
+            onDismiss = { showSkinPicker = false }
+        )
+    }
+
     if (showGiveUpDialog) {
         GiveUpDialog(
             onConfirm = {
@@ -163,7 +185,12 @@ fun GameScreen(
 }
 
 @Composable
-private fun TopBar(onClickStatistics: () -> Unit) {
+private fun TopBar(
+    skin: TileSkin,
+    onClickSkin: () -> Unit,
+    onClickStatistics: () -> Unit
+) {
+    val skinDescription = stringResource(R.string.skin_title)
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -175,6 +202,13 @@ private fun TopBar(onClickStatistics: () -> Unit) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
+        // The button shows the current skin itself
+        IconButton(
+            onClick = onClickSkin,
+            modifier = Modifier.semantics { contentDescription = skinDescription }
+        ) {
+            SkinPreview(skin = skin, side = 28.dp, number = "15")
+        }
         IconButton(onClick = onClickStatistics) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.List,

@@ -38,4 +38,9 @@
     <string name="summary_best_moves">Най-малко ходове</string>
     <string name="summary_best_time">Най-добро време</string>
     <string name="empty_scores">Все още няма игри.\nСпечели първата и тя ще се появи тук.</string>
+    <string name="skin_title">Стил на плочките</string>
+    <string name="skin_classic">Класика</string>
+    <string name="skin_dark_wood">Тъмно дърво</string>
+    <string name="skin_light_wood">Светло дърво</string>
+    <string name="skin_orange">Портокал</string>
 </resources>
