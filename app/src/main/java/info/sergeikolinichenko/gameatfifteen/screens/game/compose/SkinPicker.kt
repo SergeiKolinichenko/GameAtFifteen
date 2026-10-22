@@ -54,17 +54,20 @@ fun SkinPicker(
                 text = stringResource(R.string.skin_title),
                 style = MaterialTheme.typography.titleLarge
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TileSkin.entries.forEach { skin ->
-                    SkinOption(
-                        modifier = Modifier.weight(1f),
-                        skin = skin,
-                        selected = skin == current,
-                        onClick = { onSelect(skin) }
-                    )
+            // Two per row: four in a row leave no room for names like "Светлое дерево"
+            TileSkin.entries.chunked(2).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    row.forEach { skin ->
+                        SkinOption(
+                            modifier = Modifier.weight(1f),
+                            skin = skin,
+                            selected = skin == current,
+                            onClick = { onSelect(skin) }
+                        )
+                    }
                 }
             }
         }
@@ -94,10 +97,11 @@ private fun SkinOption(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SkinPreview(skin = skin, side = 64.dp)
+        SkinPreview(skin = skin, side = 72.dp)
         Text(
             text = stringResource(skin.title),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
             textAlign = TextAlign.Center,
             color = if (selected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurface

@@ -426,7 +426,7 @@ private val LightWoodHighlight = Color(0xB3FFF8E8)
 // Orange: cartoon tiles with a raised face and a ring
 private val OrangeRim = Color(0xFFF2B851)
 private val OrangeFrame = Color(0xFF8E3E1F)
-private val OrangeEmpty = Color(0xFFE27B3F)
+private val OrangeEmpty = Color(0xFF6E2B12)
 private val OrangeTileTop = Color(0xFFF4BE58)
 private val OrangeTileBottom = Color(0xFFEA9640)
 private val OrangeTileEdge = Color(0xFFA9541F)
