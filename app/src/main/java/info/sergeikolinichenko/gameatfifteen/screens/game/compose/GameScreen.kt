@@ -2,6 +2,7 @@ package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -311,15 +312,17 @@ private fun IdleControls(
             .alpha(if (visible) 1f else 0f),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
+        // One line always: with a large system font it shrinks instead of wrapping
+        val hintStyle = MaterialTheme.typography.bodyMedium
+        BasicText(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.text_hint, boardSize * boardSize - 1),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            // One line always: with a large system font it shrinks instead of wrapping
+            style = hintStyle.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            ),
             maxLines = 1,
-            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = MaterialTheme.typography.bodyMedium.fontSize)
+            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = hintStyle.fontSize)
         )
         val sizes = GameBoardState.SIZES.toList()
         val sizeTitle = stringResource(R.string.board_size_title)
