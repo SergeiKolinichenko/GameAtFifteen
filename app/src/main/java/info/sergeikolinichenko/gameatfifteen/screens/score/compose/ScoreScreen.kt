@@ -36,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +73,11 @@ fun ScoreScreen(
     val scores by viewModel.scores.observeAsState(emptyList())
     val summary by viewModel.summary.observeAsState(ScoreSummary(0, null, null))
     val sortBy by viewModel.sortBy.observeAsState(ScoreSort.DATE)
+    val hasScores by viewModel.hasScores.observeAsState(false)
+    val sizes by viewModel.sizes.observeAsState(emptyList())
+    val boardSize by viewModel.boardSize.observeAsState()
+
+    LaunchedEffect(Unit) { viewModel.onOpen() }
 
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -106,7 +112,7 @@ fun ScoreScreen(
                     }
                 },
                 actions = {
-                    if (scores.isNotEmpty()) {
+                    if (hasScores) {
                         IconButton(onClick = { showDeleteAllDialog = true }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -123,7 +129,7 @@ fun ScoreScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
 
-        if (scores.isEmpty()) {
+        if (!hasScores) {
             EmptyState(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -137,6 +143,17 @@ fun ScoreScreen(
                     .fillMaxSize(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp)
             ) {
+                // Only when there is more than one size to choose from
+                if (sizes.size > 1) {
+                    item(key = "sizes") {
+                        SizeChips(
+                            sizes = sizes,
+                            selected = boardSize,
+                            onSelect = { viewModel.setBoardSize(it) }
+                        )
+                        Spacer(modifier = Modifier.size(12.dp))
+                    }
+                }
                 item(key = "summary") {
                     SummaryRow(summary = summary)
                     Spacer(modifier = Modifier.size(16.dp))
@@ -263,6 +280,27 @@ private fun SortChip(
         onClick = { onSelect(sort) },
         label = { Text(text = stringResource(title)) }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SizeChips(
+    sizes: List<Int>,
+    selected: Int?,
+    onSelect: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        sizes.forEach { size ->
+            FilterChip(
+                selected = size == selected,
+                onClick = { onSelect(size) },
+                label = { Text(text = stringResource(R.string.board_size, size)) }
+            )
+        }
+    }
 }
 
 @Composable

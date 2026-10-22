@@ -73,14 +73,11 @@ class GameActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        gameViewModel.resumeGame()
-    }
-
     override fun onStop() {
         gameViewModel.saveGame()
-        gameViewModel.pauseGame()
+        // Back in the app the board stays hidden until the player continues.
+        // A rotation is not leaving: the game goes on.
+        if (!isChangingConfigurations) gameViewModel.pauseGame()
         super.onStop()
     }
 }

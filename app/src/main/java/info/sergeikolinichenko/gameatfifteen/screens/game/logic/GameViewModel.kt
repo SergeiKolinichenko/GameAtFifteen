@@ -10,7 +10,7 @@ import info.sergeikolinichenko.gameatfifteen.models.StateGame
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState.Companion.getGameArray
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.WinResult
-import info.sergeikolinichenko.gameatfifteen.ui.skins.SkinStore
+import info.sergeikolinichenko.gameatfifteen.settings.GameSettings
 import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
 import info.sergeikolinichenko.gameatfifteen.usecases.GetGameUseCase
 import info.sergeikolinichenko.gameatfifteen.usecases.GetListScoreGameUseCase
@@ -31,11 +31,20 @@ class GameViewModel @Inject constructor(
     private val getGame: GetGameUseCase,
     private val setScoreGame: SetScoreGameUseCase,
     getListScoreGame: GetListScoreGameUseCase,
-    private val skinStore: SkinStore
+    private val settings: GameSettings
 ) : ViewModel() {
 
-    private var _tileSkin = MutableLiveData(skinStore.get())
+    private var _tileSkin = MutableLiveData(settings.skin)
     val tileSkin: LiveData<TileSkin> = _tileSkin
+
+    // Side of the board: 3 for 3x3 and so on
+    private var _boardSize = MutableLiveData(settings.boardSize)
+    val boardSize: LiveData<Int> = _boardSize
+    private val size: Int get() = _boardSize.value ?: GameBoardState.DEFAULT_SIZE
+
+    // Paused game: the clock stands and the board is hidden, so nobody thinks without the clock
+    private var _isPaused = MutableLiveData(false)
+    val isPaused: LiveData<Boolean> = _isPaused
 
     private var _timeElapsedText = MutableLiveData(RESET_STRING_TO_EMPTY)
     val timeElapsedText: LiveData<String> = _timeElapsedText
@@ -74,13 +83,21 @@ class GameViewModel @Inject constructor(
         if (testEnableGameBord()) {
             restoreGame()
         } else {
-            _gameBoard.value = getGameArray()
+            _gameBoard.value = getGameArray(size)
         }
     }
 
     fun onSelectSkin(skin: TileSkin) {
-        skinStore.set(skin)
+        settings.skin = skin
         _tileSkin.value = skin
+    }
+
+    // The size can be changed only between games
+    fun onSelectBoardSize(boardSize: Int) {
+        if (_isPlaying.value == true || boardSize !in GameBoardState.SIZES) return
+        settings.boardSize = boardSize
+        _boardSize.value = boardSize
+        _gameBoard.value = getGameArray(boardSize)
     }
 
     fun onClickStartGame() {
@@ -102,7 +119,7 @@ class GameViewModel @Inject constructor(
 
     fun onClickGameButton(number: String) {
 
-        if (_isPlaying.value != true) return
+        if (_isPlaying.value != true || _isPaused.value == true) return
 
         var indexX = -1
         var indexY = -1
@@ -145,19 +162,24 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    // Called when the app goes to the background: the clock must not run
+    // The app goes to the background, the statistics open or the player taps pause.
+    // Before the first move the clock does not run, so there is nothing to pause.
     fun pauseGame() {
+        if (_isPlaying.value != true || _movesNumber == 0) return
         stopTimer()
+        _isPaused.value = true
     }
 
     fun resumeGame() {
+        _isPaused.value = false
         if (_isPlaying.value == true && _movesNumber > 0) startTimer()
     }
 
     private fun gameOver() {
         stopTimer()
         _isPlaying.value = false
-        _gameBoard.value = getGameArray()
+        _isPaused.value = false
+        _gameBoard.value = getGameArray(size)
         resetCounters()
         clearSavedGame()
     }
@@ -169,24 +191,26 @@ class GameViewModel @Inject constructor(
         resetCounters()
         _timeElapsedText.value = RESET_INT_COUNTER_TO_ZERO.intToTimeString()
         _movesNumberText.value = RESET_INT_COUNTER_TO_ZERO.toString()
+        _isPaused.value = false
         _isPlaying.value = true
     }
 
-    // A random permutation is solvable for a 4x4 board only when
-    // inversions + row of the empty cell counted from the bottom is odd
     private fun getShuffledGameArray(): Array<Array<GameBoardState>> {
-        val solved = getGameArray().flatten()
+        val side = size
+        val solved = getGameArray(side).flatten()
         var plates: List<GameBoardState>
         do {
             plates = solved.shuffled()
-        } while (!isSolvable(plates) || plates == solved)
+        } while (!isSolvable(plates, side) || plates == solved)
 
-        return Array(BOARD_SIZE) { x ->
-            Array(BOARD_SIZE) { y -> plates[x * BOARD_SIZE + y] }
+        return Array(side) { x ->
+            Array(side) { y -> plates[x * side + y] }
         }
     }
 
-    private fun isSolvable(plates: List<GameBoardState>): Boolean {
+    // Odd side: solvable when the number of inversions is even.
+    // Even side: when inversions + row of the empty cell counted from the bottom is odd.
+    private fun isSolvable(plates: List<GameBoardState>, size: Int): Boolean {
         val numbers = plates
             .filter { it != GameBoardState.NoPlate }
             .map { it.number.toInt() }
@@ -198,7 +222,8 @@ class GameViewModel @Inject constructor(
             }
         }
 
-        val emptyRowFromBottom = BOARD_SIZE - plates.indexOf(GameBoardState.NoPlate) / BOARD_SIZE
+        if (size % 2 == 1) return inversions % 2 == 0
+        val emptyRowFromBottom = size - plates.indexOf(GameBoardState.NoPlate) / size
         return (inversions + emptyRowFromBottom) % 2 == 1
     }
 
@@ -215,7 +240,7 @@ class GameViewModel @Inject constructor(
             val emptyY = getEmptyY()
 
             // Work on a deep copy so the board already on screen is never mutated
-            val current = gameBoard.value ?: getGameArray()
+            val current = gameBoard.value ?: getGameArray(size)
             val board = Array(current.size) { current[it].copyOf() }
 
             board[emptyX][emptyY] = board[x][y]
@@ -230,9 +255,10 @@ class GameViewModel @Inject constructor(
     private fun gameWon() {
         stopTimer()
         _isPlaying.value = false
-        // Compare with the results saved before this game
-        val bestMoves = scores.minOfOrNull { it.doneMoves }
-        val bestTime = scores.minOfOrNull { it.timeUsed }
+        // Compare with the results saved before this game, on a board of the same size
+        val sameSize = scores.filter { it.boardSize == size }
+        val bestMoves = sameSize.minOfOrNull { it.doneMoves }
+        val bestTime = sameSize.minOfOrNull { it.timeUsed }
         saveScoreGame()
         clearSavedGame()
         _winResult.value = WinResult(
@@ -240,7 +266,7 @@ class GameViewModel @Inject constructor(
             time = _countTimer.intToTimeString(),
             isRecordMoves = bestMoves != null && _movesNumber < bestMoves,
             isRecordTime = bestTime != null && _countTimer < bestTime,
-            isFirstWin = scores.isEmpty()
+            isFirstWin = sameSize.isEmpty()
         )
     }
 
@@ -248,7 +274,8 @@ class GameViewModel @Inject constructor(
         val scoreGame = ScoreGame(
             timeStamp = System.currentTimeMillis(),
             doneMoves = _movesNumber,
-            timeUsed = _countTimer
+            timeUsed = _countTimer,
+            boardSize = size
         )
         viewModelScope.launch {
             setScoreGame.invoke(scoreGame = scoreGame)
@@ -256,8 +283,8 @@ class GameViewModel @Inject constructor(
     }
 
     private fun chekWin(): Boolean {
-        val board = gameBoard.value ?: getGameArray()
-        return (board.contentDeepEquals(getGameArray()))
+        val board = gameBoard.value ?: getGameArray(size)
+        return (board.contentDeepEquals(getGameArray(size)))
     }
 
     private fun setHideWinDialog() {
@@ -269,7 +296,7 @@ class GameViewModel @Inject constructor(
         val blankX = getEmptyX()
         val blankY = getEmptyY()
 
-        if ((x !in 0..3) or (y !in 0..3)) {
+        if ((x !in 0 until size) or (y !in 0 until size)) {
             return false
         }
 
@@ -283,7 +310,7 @@ class GameViewModel @Inject constructor(
 
     private fun getEmptyX(): Int {
         var indexX = 0
-        val board = gameBoard.value ?: getGameArray()
+        val board = gameBoard.value ?: getGameArray(size)
         gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexX = x
@@ -294,7 +321,7 @@ class GameViewModel @Inject constructor(
 
     private fun getEmptyY(): Int {
         var indexY = 0
-        val board = gameBoard.value ?: getGameArray()
+        val board = gameBoard.value ?: getGameArray(size)
         gameBoard.value?.forEachIndexed { x, arrayOfGameBoardStates ->
             arrayOfGameBoardStates.forEachIndexed { y, _ ->
                 if (board[x][y] == GameBoardState.NoPlate) indexY = y
@@ -342,7 +369,7 @@ class GameViewModel @Inject constructor(
     private fun clearSavedGame() {
         setGame.invoke(
             StateGame(
-                state = JSONArray(emptyStringArray()).toString(),
+                state = JSONArray().toString(),
                 moves = 0,
                 time = 0
             )
@@ -356,8 +383,13 @@ class GameViewModel @Inject constructor(
 
         clearSavedGame()
 
-        if (board.contentDeepEquals(getGameArray())) {
-            _gameBoard.value = getGameArray()
+        // The saved board tells its own size
+        val restoredSize = board?.size ?: size
+        _boardSize.value = restoredSize
+        settings.boardSize = restoredSize
+
+        if (board == null || board.contentDeepEquals(getGameArray(restoredSize))) {
+            _gameBoard.value = getGameArray(restoredSize)
             return
         }
 
@@ -368,37 +400,32 @@ class GameViewModel @Inject constructor(
         _movesNumberText.value = _movesNumber.toString()
         _timeElapsedText.value = _countTimer.intToTimeString()
         _isPlaying.value = true
+        // Back after the app was closed: the player starts the clock again
+        _isPaused.value = true
     }
 
     private fun getGameBoardToJson(): String {
-
-        val board = gameBoard.value ?: getGameArray()
-        val array = emptyStringArray()
-
-        board.forEachIndexed { x, arrayOfGameBoardStates ->
-            arrayOfGameBoardStates.forEachIndexed { y, gameBoardState ->
-                array[x][y] = gameBoardState.number
-            }
-        }
-
+        val board = gameBoard.value ?: getGameArray(size)
+        val array = board.map { row -> row.map { it.number } }
         return JSONArray(array).toString()
-
     }
 
-    private fun getJsonToGameBoard(state: String): Array<Array<GameBoardState>> {
-        val board = getGameArray()
-        val jsonArray = JSONArray(state)
-        for (x in 0 until jsonArray.length()) {
-            for (y in 0 until (jsonArray[x] as JSONArray).length()) {
-                getGameArray().forEach { array ->
-                    array.forEach {
-                        if (it.number == (jsonArray[x] as JSONArray)[y]) {
-                            board[x][y] = it
-                        }
-                    }
-                }
+    // null when the saved text is not a whole square board of a known size
+    private fun getJsonToGameBoard(state: String): Array<Array<GameBoardState>>? {
+        val numbers = runCatching {
+            val rows = JSONArray(state)
+            List(rows.length()) { x ->
+                val row = rows.getJSONArray(x)
+                List(row.length()) { y -> row.getString(y) }
             }
+        }.getOrNull() ?: return null
+
+        val side = numbers.size
+        if (side !in GameBoardState.SIZES || numbers.any { it.size != side }) return null
+        val board = Array(side) { x ->
+            Array(side) { y -> GameBoardState.fromNumber(numbers[x][y]) }
         }
+        if (board.flatten().toSet() != getGameArray(side).flatten().toSet()) return null
         return board
     }
 
@@ -416,14 +443,6 @@ class GameViewModel @Inject constructor(
     companion object {
         private const val RESET_STRING_TO_EMPTY = ""
         private const val RESET_INT_COUNTER_TO_ZERO = 0
-        private const val BOARD_SIZE = 4
         private const val TIMER_TICK = 1000L
-
-        private fun emptyStringArray() = arrayOf(
-            arrayOf("", "", "", ""),
-            arrayOf("", "", "", ""),
-            arrayOf("", "", "", ""),
-            arrayOf("", "", "", "")
-        )
     }
 }

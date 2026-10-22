@@ -5,5 +5,7 @@ package info.sergeikolinichenko.gameatfifteen.models
 data class ScoreGame(
     val timeStamp: Long,
     val doneMoves: Int,
-    val timeUsed: Int
+    val timeUsed: Int,
+    // Side of the board: 3 for 3x3 and so on. Results before 1.7 were all 4x4
+    val boardSize: Int = 4
 )

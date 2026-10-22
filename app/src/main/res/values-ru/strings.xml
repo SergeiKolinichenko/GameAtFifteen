@@ -8,7 +8,6 @@
     <string name="button_play">Играть</string>
     <string name="text_move_number">Ходы</string>
     <string name="text_time_elapsed">Время</string>
-    <string name="text_hint">Расставь фишки по порядку от 1 до 15</string>
     <string name="win_dialog_congratulations">Победа!</string>
     <string name="win_dialog_title_button_cancel">Закрыть</string>
     <string name="win_dialog_title_button_start">Ещё раз</string>
@@ -43,4 +42,10 @@
     <string name="skin_dark_wood">Тёмное дерево</string>
     <string name="skin_light_wood">Светлое дерево</string>
     <string name="skin_orange">Апельсин</string>
+    <string name="text_hint">Расставь фишки по порядку от 1 до %1$d</string>
+    <string name="board_size">%1$d×%1$d</string>
+    <string name="board_size_title">Размер поля</string>
+    <string name="button_pause">Пауза</string>
+    <string name="paused_title">Пауза</string>
+    <string name="button_resume">Продолжить</string>
 </resources>
