@@ -42,7 +42,7 @@
     <string name="skin_dark_wood">Dark wood</string>
     <string name="skin_light_wood">Light wood</string>
     <string name="skin_orange">Orange</string>
-    <string name="text_hint">Put the tiles in order from 1 to %1$d</string>
+    <string name="text_hint">Put the tiles in order from 1 to\u00A0%1$d</string>
     <string name="board_size">%1$d×%1$d</string>
     <string name="board_size_title">Board size</string>
     <string name="button_pause">Pause</string>
