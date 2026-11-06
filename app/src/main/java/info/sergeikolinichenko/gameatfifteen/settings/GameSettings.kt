@@ -23,8 +23,14 @@ class GameSettings @Inject constructor(
             .takeIf { it in GameBoardState.SIZES } ?: GameBoardState.DEFAULT_SIZE
         set(value) = preferences.edit { putInt(KEY_BOARD_SIZE, value) }
 
+    // Tile drag, move bounce, win wave and confetti; off leaves plain moves
+    var animations: Boolean
+        get() = preferences.getBoolean(KEY_ANIMATIONS, true)
+        set(value) = preferences.edit { putBoolean(KEY_ANIMATIONS, value) }
+
     private companion object {
         const val KEY_TILE_SKIN = "tile_skin"
+        const val KEY_ANIMATIONS = "animations"
         const val KEY_BOARD_SIZE = "board_size"
     }
 }

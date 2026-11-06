@@ -1,6 +1,8 @@
 package info.sergeikolinichenko.gameatfifteen.screens.game.compose
 
 import android.content.res.Configuration
+import android.provider.Settings
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -35,6 +37,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,6 +63,7 @@ import info.sergeikolinichenko.gameatfifteen.screens.game.logic.GameViewModel
 import info.sergeikolinichenko.gameatfifteen.screens.game.states.GameBoardState
 import info.sergeikolinichenko.gameatfifteen.ui.skins.TileSkin
 import info.sergeikolinichenko.gameatfifteen.ui.theme.NumbersStyle
+import kotlinx.coroutines.delay
 
 /** Created by Sergei Kolinichenko on 24.01.2023 at 20:19 (GMT+3) **/
 
@@ -74,6 +80,15 @@ fun GameScreen(
     val skin by viewModel.tileSkin.observeAsState(TileSkin.CLASSIC)
     val boardSize by viewModel.boardSize.observeAsState(GameBoardState.DEFAULT_SIZE)
     val isPaused by viewModel.isPaused.observeAsState(false)
+    val animationsSetting by viewModel.animations.observeAsState(true)
+    // "Remove animations" in the system settings wins over the game's own switch
+    val context = LocalContext.current
+    val systemAnimations = remember {
+        Settings.Global.getFloat(
+            context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+        ) > 0f
+    }
+    val animations = animationsSetting && systemAnimations
     // Before the first move the clock stands anyway
     val canPause = isPlaying && !isPaused && (moves.toIntOrNull() ?: 0) > 0
 
@@ -86,9 +101,18 @@ fun GameScreen(
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         }
     }
+    // The win dialog waits until the tiles have jumped and the confetti is up
+    var winShown by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(winResult) {
-        if (winResult != null) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (winResult == null) {
+            winShown = false
+        } else if (!winShown) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            if (animations) delay(WIN_DIALOG_DELAY_MS)
+            winShown = true
+        }
     }
+    val celebrate = winResult != null && animations
     val openStatistics = {
         viewModel.pauseGame()
         onClickStatistics()
@@ -100,6 +124,8 @@ fun GameScreen(
             isPlaying = isPlaying,
             isPaused = isPaused,
             skin = skin,
+            animations = animations,
+            celebrate = celebrate,
             onClickPlate = { viewModel.onClickGameButton(it) },
             onResume = { viewModel.resumeGame() },
             modifier = modifier
@@ -116,18 +142,49 @@ fun GameScreen(
     val isLandscape =
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    if (isLandscape) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .safeDrawingPadding()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TopBar(
+                        skin = skin,
+                        canPause = canPause,
+                        onClickPause = { viewModel.pauseGame() },
+                        onClickSkin = { showSkinPicker = true },
+                        onClickStatistics = openStatistics
+                    )
+                    Counters(moves = moves, time = time)
+                    IdleControls(
+                        visible = !isPlaying,
+                        boardSize = boardSize,
+                        onSelectSize = { viewModel.onSelectBoardSize(it) }
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    actionButton()
+                }
+                gameBoard(
+                    Modifier
+                        .weight(1.3f)
+                        .fillMaxHeight()
+                )
+            }
+        } else {
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                    .fillMaxSize()
+                    .safeDrawingPadding()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TopBar(
@@ -138,53 +195,29 @@ fun GameScreen(
                     onClickStatistics = openStatistics
                 )
                 Counters(moves = moves, time = time)
+                gameBoard(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+                // The hint and the size keep their space while playing, so the board does not jump
                 IdleControls(
                     visible = !isPlaying,
                     boardSize = boardSize,
                     onSelectSize = { viewModel.onSelectBoardSize(it) }
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 actionButton()
             }
-            gameBoard(
-                Modifier
-                    .weight(1.3f)
-                    .fillMaxHeight()
-            )
         }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            TopBar(
-                skin = skin,
-                canPause = canPause,
-                onClickPause = { viewModel.pauseGame() },
-                onClickSkin = { showSkinPicker = true },
-                onClickStatistics = openStatistics
-            )
-            Counters(moves = moves, time = time)
-            gameBoard(
-                Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            )
-            // The hint and the size keep their space while playing, so the board does not jump
-            IdleControls(
-                visible = !isPlaying,
-                boardSize = boardSize,
-                onSelectSize = { viewModel.onSelectBoardSize(it) }
-            )
-            actionButton()
+
+        // Fired once per win; a dialog on top does not stop it
+        if (celebrate) {
+            key(winResult) { Confetti() }
         }
     }
 
     WinDialog(
-        result = winResult,
+        result = if (winShown) winResult else null,
         onPlayAgain = { viewModel.onClickPlayAgain() },
         onDismiss = { viewModel.onDismissWinDialog() }
     )
@@ -193,6 +226,8 @@ fun GameScreen(
         SkinPicker(
             current = skin,
             onSelect = { viewModel.onSelectSkin(it) },
+            animations = animationsSetting,
+            onSwitchAnimations = { viewModel.onSwitchAnimations(it) },
             onDismiss = { showSkinPicker = false }
         )
     }
@@ -406,3 +441,4 @@ private fun GiveUpDialog(
 }
 
 private const val EMPTY_VALUE = "—"
+private const val WIN_DIALOG_DELAY_MS = 1100L
