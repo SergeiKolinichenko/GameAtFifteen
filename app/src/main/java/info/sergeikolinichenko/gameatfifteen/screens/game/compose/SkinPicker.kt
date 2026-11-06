@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -37,6 +39,8 @@ import info.sergeikolinichenko.gameatfifteen.ui.skins.skinBoard
 fun SkinPicker(
     current: TileSkin,
     onSelect: (TileSkin) -> Unit,
+    animations: Boolean,
+    onSwitchAnimations: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(
@@ -69,6 +73,25 @@ fun SkinPicker(
                         )
                     }
                 }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .toggleable(
+                        value = animations,
+                        role = Role.Switch,
+                        onValueChange = onSwitchAnimations
+                    )
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.animations_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Switch(checked = animations, onCheckedChange = null)
             }
         }
     }

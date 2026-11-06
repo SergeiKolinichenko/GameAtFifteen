@@ -37,6 +37,9 @@ class GameViewModel @Inject constructor(
     private var _tileSkin = MutableLiveData(settings.skin)
     val tileSkin: LiveData<TileSkin> = _tileSkin
 
+    private var _animations = MutableLiveData(settings.animations)
+    val animations: LiveData<Boolean> = _animations
+
     // Side of the board: 3 for 3x3 and so on
     private var _boardSize = MutableLiveData(settings.boardSize)
     val boardSize: LiveData<Int> = _boardSize
@@ -90,6 +93,11 @@ class GameViewModel @Inject constructor(
     fun onSelectSkin(skin: TileSkin) {
         settings.skin = skin
         _tileSkin.value = skin
+    }
+
+    fun onSwitchAnimations(enabled: Boolean) {
+        settings.animations = enabled
+        _animations.value = enabled
     }
 
     // The size can be changed only between games
